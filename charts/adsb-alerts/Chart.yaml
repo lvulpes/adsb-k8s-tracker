@@ -1,0 +1,6 @@
+apiVersion: v2
+name: adsb-alerts
+description: A Helm chart for ADS-B alerts
+type: application
+version: 0.0.1
+appVersion: "0.0.1"

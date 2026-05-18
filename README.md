@@ -11,9 +11,9 @@ This is a learning project to get familiar with ads-b reception using SDR, deplo
 |  RTL-SDR Dongle| ----> |  adsb-decoder     |       |  adsb-exchange   |
 |  (Hardware)    |       |  (readsb/tar1090) |       |  (External API)  |
 +----------------+       +---------+---------+       +--------+---------+
-                                   |                          |
-                                   | (Live Stream)            | (API Calls)
-                                   v                          v
+                                   ^                          |
+                                   | (Reads)                  | (API Calls)
+                                   | (TCP/30003)              v
                          +-------------------+       +------------------+
                          |  adsb-ingestor    | <---->|  adsb-api        |
                          |  (Python/Node)    |       |  (Filter Logic)  |
