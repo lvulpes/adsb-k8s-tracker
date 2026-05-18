@@ -5,6 +5,7 @@ A kubernetes deployment of an adsb receiver for flight tracking.
 This is a learning project to get familiar with ads-b reception using SDR, deployment using kubernetes as well as alerting and monitoring.
 
 # Architecture
+
 graph TD
     subgraph Hardware
         SDR[RTL-SDR Dongle]
@@ -38,3 +39,4 @@ graph TD
     style SDR fill:#f9f,stroke:#333,stroke-width:2px
     style DB fill:#77dd77,stroke:#333,stroke-width:2px
     style UI fill:#aec6cf,stroke:#333,stroke-width:2px
+    
