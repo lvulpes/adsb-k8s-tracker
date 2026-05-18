@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-db-deployment
+  labels:
+    app.kubernetes.io/name: adsb-db
+    app.kubernetes.io/component: db
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: adsb-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: adsb-db
+    spec:
+      containers:
+        - name: adsb-db
+          image: docker.io/library/postgres:16-alpine
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432
+              name: dbport
+          env:
+            - name: POSTGRES_DB
+              value: adsb_tracker
+            - name: POSTGRES_USER
+              value: adsb_admin
+            - name: POSTGRES_PASSWORD
+              value: supersecretpassword
+          # Resource limits 
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-db-service
+spec:
+  selector:
+    app.kubernetes.io/name: adsb-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-ingestor-deployment
+  labels:
+    app.kubernetes.io/name: adsb-ingestor
+    app.kubernetes.io/component: ingestor
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: adsb-ingestor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: adsb-ingestor
+    spec:
+      containers:
+        - name: adsb-ingestor
+          image: PLACEHOLDER/adsb-ingestor:latest
+          imagePullPolicy: Always
+          command: ["python"]
+          args: ["main.py"]
+          env:
+            - name: DECODER_HOST
+              value: adsb-decoder-service
+            - name: DECODER_PORT
+              value: 30003
+            - name: DB_HOST
+              value: adsb-db-service
+          # Resource limits 
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi

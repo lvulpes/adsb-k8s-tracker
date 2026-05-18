@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-api-deployment
+  labels:
+    app.kubernetes.io/name: adsb-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: adsb-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: adsb-api
+    spec:
+      containers:
+        - name: adsb-api
+          image: PLACEHOLDER/adsb-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          command: ["python"]
+          args: ["main.py"]
+          # Resource limits 
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-api-service
+spec:
+  selector:
+    app.kubernetes.io/name: adsb-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
