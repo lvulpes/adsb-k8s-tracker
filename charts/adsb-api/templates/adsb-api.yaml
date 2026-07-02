@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: adsb-api
-          image: PLACEHOLDER/adsb-api:latest
+          image: adsb-api:local
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
