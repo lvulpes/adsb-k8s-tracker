@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-api-config
+  labels:
+    app: adsb-api
+    component: config
+data:
+  config.json: |
+    {
+      "endpoints": {
+        "mil": {
+          "tables": ["aircraft_military", "positions_military"],
+          "url": "https://api.airplanes.live/v2/mil",
+          "filter": "baltic",
+          "stale_timeout": "2"
+        }
+      },
+      "poi": {
+        "baltic": {
+          "coordinates": {
+            "lon": "18.512082",
+            "lat": "57.470279",
+            "distance": "500",
+            "unit": "km"
+          }
+        }
+      }
+    }
