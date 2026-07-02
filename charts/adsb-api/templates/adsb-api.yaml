@@ -31,6 +31,18 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+          volumeMounts:
+            # This name refers to the storage block to grab and mount in the file system of this container
+            - name: adsb-api-config
+              mountPath: /app/adsb-api/config.json
+              subPath: config.json
+              readOnly: true
+      volumes:
+        # This name defines the identity of the storage volume at the pod level
+        - name: adsb-api-config
+          configMap:
+            # This is the name of the configmap in the Helm chart
+            name: adsb-api-config
 ---
 apiVersion: v1
 kind: Service
