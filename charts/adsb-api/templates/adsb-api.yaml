@@ -18,7 +18,7 @@ spec:
       containers:
         - name: adsb-api
           image: adsb-api:local
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           command: ["python"]
