@@ -1,0 +1,32 @@
+What would be a good way to test the functionality of the worker.py component?
+Probably to have it run inside an actual pod, pull aircraft, apply the filter, and dump the data on the website, or in a first stage somewhere easily accessible
+
+Tests:
+
+1. Show that the fetch script gets aircraft and applies the filter -> DONE
+2. Do the same inside a pod with a configmap to handle filter parameters -> Create the configmap and manifest! -> Change paths until it runs in the pod and call it a day
+3. Connect to a database component
+
+Notes:
+
+Dockerfile setup
+
+1. Got a vibed Dockerfile
+2. 
+# build the image
+docker build -t adsb-api:local .
+# start the cluster
+k3d cluster start hugin-cluster
+# import the image into the cluster
+k3d image import adsb-api:local -c hugin-cluster
+# update pod spec manifest to use local dockerfile
+# deploy and verify
+kubectl apply -f your-configmap-file.yaml
+kubectl apply -f your-deployment-file.yaml
+kubectl get pods -l app.kubernetes.io/name=adsb-api
+kubectl logs -l app.kubernetes.io/name=adsb-api -f
+# then edit logging in the app and redeploy to actually see useful logs?
+
+# After making changes we want to restart the failed pod:
+# Force Kubernetes to kill the old crashing pod and pull the fresh image
+kubectl rollout restart deployment adsb-api-deployment
