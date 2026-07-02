@@ -19,10 +19,13 @@ spec:
         - name: adsb-api
           image: adsb-api:local
           imagePullPolicy: IfNotPresent
+          env:
+            - name: LOG_LEVEL
+              value: "INFO"
           ports:
             - containerPort: 8080
           command: ["python"]
-          args: ["main.py"]
+          args: ["adsb-api/main.py"]
           # Resource limits 
           resources:
             limits:
