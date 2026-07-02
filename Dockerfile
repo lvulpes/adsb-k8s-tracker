@@ -25,8 +25,11 @@ WORKDIR /app
 # Copy the pre-compiled virtual environment from the builder stage
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
-
 # Ensure Python outputs logs immediately without buffering
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "app/adsb-api/main.py"]
+# Copy the actual source code
+COPY app/adsb-api/ ./adsb-api
+
+# Fallback, will be overridden by k8s
+CMD ["python", "adsb-api/main.py"]
