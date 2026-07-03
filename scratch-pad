@@ -7,6 +7,13 @@ Tests:
 2. Do the same inside a pod with a configmap to handle filter parameters -> Create the configmap and manifest! -> Change paths until it runs in the pod and call it a day
 3. Connect to a database component
 
+Database component notes
+The 4 components of a database in k8s
+- StatefulSet (instead of a deployment)
+- PersistentVolumeClaim (because data needs to be saved on disk)
+- Service (internal DNS)
+- Secret (for user/passwd)
+
 Notes:
 
 Dockerfile setup
@@ -30,3 +37,6 @@ kubectl logs -l app.kubernetes.io/name=adsb-api -f
 # After making changes we want to restart the failed pod:
 # Force Kubernetes to kill the old crashing pod and pull the fresh image
 kubectl rollout restart deployment adsb-api-deployment
+
+# kill the deployment if necessary
+kubectl delete deployment adsb-api-deployment
