@@ -7,6 +7,13 @@ Tests:
 2. Do the same inside a pod with a configmap to handle filter parameters -> Create the configmap and manifest! -> Change paths until it runs in the pod and call it a day
 3. Connect to a database component
 
+Database component notes
+The 4 components of a database in k8s
+- StatefulSet (instead of a deployment)
+- PersistentVolumeClaim (because data needs to be saved on disk)
+- Service (internal DNS)
+- Secret (for user/passwd)
+
 Notes:
 
 Dockerfile setup
@@ -30,3 +37,30 @@ kubectl logs -l app.kubernetes.io/name=adsb-api -f
 # After making changes we want to restart the failed pod:
 # Force Kubernetes to kill the old crashing pod and pull the fresh image
 kubectl rollout restart deployment adsb-api-deployment
+
+# kill the deployment if necessary
+kubectl delete deployment adsb-api-deployment
+
+
+# postgresql setup notes
+
+PostgreSQL can be accessed via port 5432 on the following DNS names from within your cluster:
+    adsb-db-postgresql.default.svc.cluster.local - Read/Write connection
+
+To get the password for "postgres" run:
+    export POSTGRES_ADMIN_PASSWORD=$(kubectl get secret --namespace default adsb-db-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+
+To get the password for "hugin" run:
+    export POSTGRES_PASSWORD=$(kubectl get secret --namespace default adsb-db-postgresql -o jsonpath="{.data.password}" | base64 -d)
+
+To connect to your database run the following command:
+    kubectl run adsb-db-postgresql-client --rm --tty -i --restart='Never' --namespace default --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=$POSTGRES_PASSWORD" \
+      --command -- psql --host adsb-db-postgresql -U hugin -d adsb -p 5432
+    > NOTE: If you access the container using bash, make sure that you execute "/opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash" in order to avoid the error "psql: local user with ID 1001} does not exist"
+
+To connect to your database from outside the cluster execute the following commands:
+    kubectl port-forward --namespace default svc/adsb-db-postgresql 5432:5432 &
+    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U hugin -d adsb -p 5432
+
+After installing postgresql with the command $ helm install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/adsb-db/values.yaml
+the statefulset, pvc, svc and secret are created in the k8s cluster. Nothing more to do, the adsb-ingestor will host the python code that configures the tables 
