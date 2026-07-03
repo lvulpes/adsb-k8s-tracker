@@ -1,0 +1,10 @@
+# charts/postgres/values.yaml
+auth:
+  database: adsb
+  username: hugin
+  password: adsbpassword
+
+primary:
+  persistence:
+    enabled: true
+    size: 10Gi
