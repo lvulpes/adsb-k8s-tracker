@@ -22,6 +22,8 @@ spec:
           env:
             - name: LOG_LEVEL
               value: "INFO"
+            - name: INGESTOR_URL
+              value: "http://adsb-ingestor-service:8000/api/v1/enrich"
           ports:
             - containerPort: 8080
           command: ["python"]

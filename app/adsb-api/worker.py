@@ -9,6 +9,7 @@ import time
 PATH = "/app"
 CONFIG_PATH = PATH + '/adsb-api/config.json'
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+INGESTOR_URL = os.getenv("INGESTOR_URL", "")
 
 logging.basicConfig(
 	level=getattr(logging, LOG_LEVEL, logging.INFO),
@@ -72,6 +73,14 @@ def get_adsb_feed(URL: str) -> dict:
 	else:
 		return response.json()
 
+def ship_to_ingestor(payload: dict) -> None:
+    """ Take aircraft dictionaries and ship it to the ingestor pod. """
+    try:
+        requests.post(INGESTOR_URL, json=payload)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to ship payload to ingestor service: {e}")
+
+
 def main() -> None:
 	logging.info("Starting app...")
 	logging.info("Reading config...")
@@ -88,6 +97,9 @@ def main() -> None:
 			time.sleep(1)
 			# Attach config data to use later
 			aircraft_data[query].update(config['endpoints'][query])
+            # Do filtering on the data here
+            # Push json to ingestor which ships it to database
+            ship_to_ingestor(aircraft_data[query])
 		# end of workflow, sleep for 60s
 		time.sleep(59)
 	
