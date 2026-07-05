@@ -82,7 +82,7 @@ def ship_to_ingestor(payload: list) -> None:
         requests.post(INGESTOR_URL, json=payload, timeout=10)
     except requests.exceptions.RequestException as e:
         print(f"Failed to ship payload to ingestor service: {e}")
-    logging.info(f"Shipped to ingestor: {len(payload)} aircraft")
+    logging.info(f"Shipped to ingestor: {payload}")
 
 
 def main() -> None:
@@ -120,7 +120,7 @@ def main() -> None:
             filtered_ac = poi_filter(config['poi'][query_filter], aircraft_data[query])
             # Push json to ingestor which ships it to database, if any
             if filtered_ac:
-                ship_to_ingestor(aircraft_data[query])
+                ship_to_ingestor(filtered_ac)
             else:
                 logging.warning(f"filter returned {len(filtered_ac)} aircraft for {query_filter}")
         # end of workflow, sleep for 60s
