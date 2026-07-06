@@ -1,7 +1,7 @@
 [project]
 name = "adsb-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Fetches ADS-B data from external API and applies filter logic before shipping filtered data to ingestor"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
