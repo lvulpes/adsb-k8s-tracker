@@ -25,16 +25,16 @@ spec:
             - name: DECODER_URL
               value: "http://adsb-decoder/data/aircraft.json"
             - name: DECODER_PORT
-              value: 30003
+              value: "30003"
             - name: DB_DSN
               valueFrom: 
                 secretKeyRef:
                   name: adsb-db-credentials
                   key: database_dsn
             - name: LISTEN_PORT
-              value: 8000
+              value: "8000"
             - name: POLL_INTERVAL
-              value: 15
+              value: "15"
             - name: LOG_LEVEL
               value: DEBUG
           # Resource limits 
