@@ -12,7 +12,7 @@ data:
         "mil": {
           "tables": ["aircraft_military", "positions_military"],
           "url": "https://api.airplanes.live/v2/mil",
-          "filter": "baltic",
+          "filter": "czechia",
           "stale_timeout": "2"
         }
       },
@@ -21,6 +21,14 @@ data:
           "coordinates": {
             "lon": "18.512082",
             "lat": "57.470279",
+            "distance": "500",
+            "unit": "km"
+          }
+        },
+        "czechia": {
+          "coordinates": {
+            "lon": "16.606836",
+            "lat": "49.195061",
             "distance": "500",
             "unit": "km"
           }

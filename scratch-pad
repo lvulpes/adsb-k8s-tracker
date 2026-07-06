@@ -5,21 +5,17 @@ Tests:
 
 1. Show that the fetch script gets aircraft and applies the filter -> DONE
 2. Do the same inside a pod with a configmap to handle filter parameters -> Create the configmap and manifest! -> Change paths until it runs in the pod and call it a day
-3. Connect to a database component
+3. Implement filtering on adsb-api -> Check if aircraft are filtered correctly, if not, change log level to debug
+4. Create ingestor component that receives filtered aircraft from adsb-api
+5. Attach ingestor to existing DB component
 
-Database component notes
-The 4 components of a database in k8s
-- StatefulSet (instead of a deployment)
-- PersistentVolumeClaim (because data needs to be saved on disk)
-- Service (internal DNS)
-- Secret (for user/passwd)
+Connect to a database component
+
 
 Notes:
 
 Dockerfile setup
 
-1. Got a vibed Dockerfile
-2. 
 # build the image
 docker build -t adsb-api:local .
 # start the cluster
