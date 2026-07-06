@@ -17,17 +17,26 @@ spec:
     spec:
       containers:
         - name: adsb-ingestor
-          image: PLACEHOLDER/adsb-ingestor:latest
-          imagePullPolicy: Always
+          image: adsb-ingestor:local
+          imagePullPolicy: IfNotPresent
           command: ["python"]
           args: ["main.py"]
           env:
-            - name: DECODER_HOST
-              value: adsb-decoder-service
+            - name: DECODER_URL
+              value: "http://adsb-decoder/data/aircraft.json"
             - name: DECODER_PORT
               value: 30003
-            - name: DB_HOST
-              value: adsb-db-service
+            - name: DB_DSN
+              valueFrom: 
+                secretKeyRef:
+                  name: adsb-db-credentials
+                  key: database_dsn
+            - name: LISTEN_PORT
+              value: 8000
+            - name: POLL_INTERVAL
+              value: 15
+            - name: LOG_LEVEL
+              value: DEBUG
           # Resource limits 
           resources:
             limits:
@@ -36,3 +45,17 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-ingestor-service
+spec:
+  selector:
+    app.kubernetes.io/name: adsb-ingestor
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+
