@@ -3,33 +3,35 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 WORKDIR /app
 
-# 1. Copy workspace manifests first to leverage Docker layer caching
-COPY pyproject.toml uv.lock ./
-COPY app/adsb-api/pyproject.toml ./app/adsb-api/
+# Accept the component name as a build argument
+ARG COMPONENT
+
+# 1. Copy workspace manifests
+COPY pyproject.toml uv.lock* ./
+COPY app/${COMPONENT}/pyproject.toml ./app/${COMPONENT}/
 
 # 2. Install dependencies without caching the application source code yet
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --package adsb-api
+    uv sync --frozen --no-install-project --package ${COMPONENT}
 
 # 3. Copy the actual application source code
-COPY app/adsb-api/ ./app/adsb-api/
+COPY app/${COMPONENT}/ ./app/${COMPONENT}/
 
 # 4. Final sync to include the application itself
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --package adsb-api
+    uv sync --frozen --package ${COMPONENT}
 
 # Stage 2: Tiny runtime image
 FROM python:3.12-slim
 WORKDIR /app
+ARG COMPONENT
+ENV COMPONENT_NAME=${COMPONENT}
 
-# Copy the pre-compiled virtual environment from the builder stage
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
-# Ensure Python outputs logs immediately without buffering
 ENV PYTHONUNBUFFERED=1
 
-# Copy the actual source code
-COPY app/adsb-api/ ./adsb-api
+COPY app/${COMPONENT}/ ./app/${COMPONENT}/
 
-# Fallback, will be overridden by k8s
-CMD ["python", "adsb-api/main.py"]
+# Use sh -c to evaluate the environment variable at runtime
+CMD ["sh", "-c", "python app/${COMPONENT_NAME}/main.py"]
