@@ -8,14 +8,14 @@ ARG COMPONENT
 
 # 1. Copy workspace manifests
 COPY pyproject.toml uv.lock* ./
-COPY app/${COMPONENT}/pyproject.toml ./app/${COMPONENT}/
+COPY app/${COMPONENT}/pyproject.toml /app/${COMPONENT}/
 
 # 2. Install dependencies without caching the application source code yet
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --package ${COMPONENT}
 
 # 3. Copy the actual application source code
-COPY app/${COMPONENT}/ ./app/${COMPONENT}/
+COPY app/${COMPONENT}/ /app/${COMPONENT}/
 
 # 4. Final sync to include the application itself
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -31,7 +31,7 @@ COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
-COPY app/${COMPONENT}/ ./app/${COMPONENT}/
+COPY app/${COMPONENT}/ /app/${COMPONENT}/
 
 # Use sh -c to evaluate the environment variable at runtime
 CMD ["sh", "-c", "python app/${COMPONENT_NAME}/main.py"]
