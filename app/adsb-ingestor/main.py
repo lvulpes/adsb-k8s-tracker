@@ -14,6 +14,7 @@ DECODER_URL = os.getenv("DECODER_URL", "http://adsb-decoder/data/aircraft.json")
 API_URL = os.getenv("API_URL", "http://adsb-api/api/aircraft")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "5"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LISTEN_PORT = os.getenv("LISTEN_PORT", "8000")
 
 # Configure logging
 logging.basicConfig(

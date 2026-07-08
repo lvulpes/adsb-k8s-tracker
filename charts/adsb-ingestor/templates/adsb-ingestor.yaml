@@ -20,7 +20,7 @@ spec:
           image: adsb-ingestor:local
           imagePullPolicy: IfNotPresent
           command: ["python"]
-          args: ["main.py"]
+          args: ["adsb-ingestor/main.py"]
           env:
             - name: DECODER_URL
               value: "http://adsb-decoder/data/aircraft.json"
