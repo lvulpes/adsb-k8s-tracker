@@ -10,6 +10,14 @@ k3d image import adsb-api:local -c hugin-cluster
 k3d image import adsb-ingestor:local -c hugin-cluster
 
 echo "Deploying infrastructure..."
+
+echo "Deploying infrastructure..."
+kubectl create secret generic infisical-auth \
+    --from-literal=clientId="$INFISICAL_CLIENT_ID" \
+    --from-literal=clientSecret="$INFISICAL_CLIENT_SECRET" \
+    --dry-run=client -o yaml | kubectl apply -f -
+
+helm upgrade --install cluster-infra ./charts/cluster-infra
 helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/adsb-db/values.yaml
 
 echo "Deploying components..."
