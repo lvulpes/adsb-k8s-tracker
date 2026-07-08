@@ -119,3 +119,16 @@ kubectl run my-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash
 
 # Forward a port from a pod directly to your local machine to test an API
 kubectl port-forward pod/<pod-name> 8080:8000
+
+# Setup External Secrets Operator
+# Add the External Secrets Helm repository
+helm repo add external-secrets https://charts.external-secrets.io
+
+# Update your local helm charts cache
+helm repo update
+
+# Install the operator and force it to install the missing CRDs
+helm install external-secrets external-secrets/external-secrets \
+  --namespace external-secrets \
+  --create-namespace \
+  --set installCRDs=true

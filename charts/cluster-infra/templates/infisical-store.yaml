@@ -1,0 +1,20 @@
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: infisical-backend
+spec:
+  provider:
+    infisical:
+      hostAPI: "https://app.infisical.com"
+      auth:
+        universalAuthCredentials:
+          clientId:
+            name: infisical-auth
+            key: clientId
+          clientSecret:
+            name: infisical-auth
+            key: clientSecret
+      secretsScope:
+        projectSlug: "adsb-k8s-tracker-j-sa-t"
+        environmentSlug: "dev"
+        secretsPath: "/"
