@@ -1,10 +1,21 @@
-# charts/postgres/values.yaml
+# charts/adsb-db/values.yaml
 auth:
-  database: adsb
-  username: hugin
-  password: adsbpassword
-
+  enabled: true
+  existingSecret: "adsb-db-credentials"
+  secretKeys:
+    adminPasswordKey: "db_password"
+    userPasswordKey: "db_password"
 primary:
   persistence:
     enabled: true
     size: 10Gi
+  extraEnvVars:
+    - name: POSTGRES_DATABASE
+      value: "adsb"
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: adsb-db-credentials
+          key: db_user
+    - name: POSTGRESQL_AUTH_METHOD
+      value: "md5"
