@@ -130,12 +130,12 @@ async def lifespan(app: FastAPI):
     http_session = aiohttp.ClientSession()
     
     # 3. Start background polling task for the local decoder
-    decoder_task = asyncio.create_task(fetch_decoder_data(http_session, DECODER_URL, db_pool))
+    # decoder_task = asyncio.create_task(fetch_decoder_data(http_session, DECODER_URL, db_pool))
     
     yield # App is running and receiving POST requests
     
     # 4. Teardown
-    decoder_task.cancel()
+    # decoder_task.cancel()
     await http_session.close()
     await db_pool.close()
 
