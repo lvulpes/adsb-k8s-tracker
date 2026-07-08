@@ -8,6 +8,8 @@ Tests:
 3. Implement filtering on adsb-api -> Check if aircraft are filtered correctly, if not, change log level to debug
 4. Create ingestor component that receives filtered aircraft from adsb-api
 5. Attach ingestor to existing DB component
+TO DO:
+5.1 Debug cluster deployment issues (it's now deploying but failing to start, seems like)
 
 Connect to a database component
 
@@ -60,3 +62,60 @@ To connect to your database from outside the cluster execute the following comma
 
 After installing postgresql with the command $ helm install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/adsb-db/values.yaml
 the statefulset, pvc, svc and secret are created in the k8s cluster. Nothing more to do, the adsb-ingestor will host the python code that configures the tables 
+
+# k8s debugging
+# ==========================================
+# KUBERNETES DEBUGGING CHEAT SHEET
+# ==========================================
+
+# --- Phase 1: Core Diagnostics (The Big 3) ---
+
+# 1. Get the exact name and status of failing pods
+kubectl get pods
+
+# 2. Find out WHY k8s refuses to start the pod (Scroll to 'Events' at the bottom)
+# -> Essential for: CreateContainerConfigError, ImagePullBackOff, Pending
+kubectl describe pod <pod-name>
+
+# 3. Read the application stack trace (Why did my code crash?)
+# -> Essential for: CrashLoopBackOff, Error
+kubectl logs <pod-name>
+
+# 4. The Magic Bullet: Read logs of the PREVIOUSLY crashed container
+# -> Use when the pod keeps restarting before you can read the current logs
+kubectl logs <pod-name> --previous
+
+
+# --- Phase 2: Configuration & Secrets ---
+
+# List configs/secrets to ensure names match your deployment file exactly
+kubectl get configmap
+kubectl get secret
+
+# Check if External Secrets Operator is actually working and syncing
+kubectl get externalsecrets
+kubectl describe externalsecret <secret-name>
+
+
+# --- Phase 3: Cluster-Wide State ---
+
+# View a chronological feed of ALL events (Spots systemic issues quickly)
+kubectl get events --sort-by='.metadata.creationTimestamp'
+
+# Check node resources if pods are stuck in 'Pending' (Out of memory/CPU?)
+kubectl describe nodes
+
+
+# --- Phase 4: Active Debugging & Fixes ---
+
+# Bounce a deployment to force it to pull newly built 'local' image tags
+kubectl rollout restart deployment <deployment-name>
+
+# Tail logs for multiple pods at once using their labels
+kubectl logs -f -l "app.kubernetes.io/name in (adsb-api, adsb-ingestor)"
+
+# Spin up a temporary, disposable pod loaded with network tools to test DB connections
+kubectl run my-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash
+
+# Forward a port from a pod directly to your local machine to test an API
+kubectl port-forward pod/<pod-name> 8080:8000
