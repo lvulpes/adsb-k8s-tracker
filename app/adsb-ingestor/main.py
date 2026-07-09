@@ -141,7 +141,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.post("/ingest")
+@app.post("/api/v1/enrich")
 async def receive_api_data(request: Request):
     """Endpoint for adsb-api to push data via HTTP POST."""
     try:
