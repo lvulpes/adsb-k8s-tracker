@@ -97,3 +97,7 @@ helm install external-secrets external-secrets/external-secrets \
   --namespace external-secrets \
   --create-namespace \
   --set installCRDs=true
+
+# Kill the DB and PVC to start from scratch 
+helm uninstall adsb-db
+kubectl delete pvc --all --force --grace-period=0

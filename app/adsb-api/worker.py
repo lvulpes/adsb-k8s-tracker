@@ -118,8 +118,12 @@ def main() -> None:
             # Do filtering on the data here
             logging.info(f"Sending {len(aircraft_data[query])} to poi_filter")
             filtered_ac = poi_filter(config['poi'][query_filter], aircraft_data[query])
+
             # Push json to ingestor which ships it to database, if any
             if filtered_ac:
+                for k, v in filtered_ac.items():
+                    # Add the filter that was used
+                    filtered_ac[k]['filter'] = query_filter
                 ship_to_ingestor(filtered_ac)
             else:
                 logging.warning(f"filter returned {len(filtered_ac)} aircraft for {query_filter}")

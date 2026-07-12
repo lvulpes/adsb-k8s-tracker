@@ -41,6 +41,7 @@ async def init_db(pool):
                 description TEXT,
                 operator TEXT,
                 category VARCHAR(10),
+                filter VARCHAR(30),
                 last_updated TIMESTAMPTZ DEFAULT NOW()
             );
         ''')
@@ -76,8 +77,8 @@ async def upsert_aircraft_data(pool, aircraft_list, source):
                     continue
 
                 await conn.execute('''
-                    INSERT INTO aircraft (hex, flight, registration, type_code, description, operator, category, last_updated)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+                    INSERT INTO aircraft (hex, flight, registration, type_code, description, operator, category, filter, last_updated)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
                     ON CONFLICT (hex) DO UPDATE SET
                         flight = COALESCE(EXCLUDED.flight, aircraft.flight),
                         registration = COALESCE(EXCLUDED.registration, aircraft.registration),
@@ -85,10 +86,12 @@ async def upsert_aircraft_data(pool, aircraft_list, source):
                         description = COALESCE(EXCLUDED.description, aircraft.description),
                         operator = COALESCE(EXCLUDED.operator, aircraft.operator),
                         category = COALESCE(EXCLUDED.category, aircraft.category),
+                        filter = COALESCE(EXCLUDED.filter, aircraft.filter),
                         last_updated = NOW();
                 ''', 
                 hex_code, ac.get("flight", "").strip() if ac.get("flight") else None, 
-                ac.get("r"), ac.get("t"), ac.get("desc"), ac.get("ownOp"), ac.get("category"))
+                ac.get("r"), ac.get("t"), ac.get("desc"), ac.get("ownOp"), ac.get("category"),
+                ac.get("filter"))
 
                 if ac.get("lat") is not None and ac.get("lon") is not None:
                     await conn.execute('''
