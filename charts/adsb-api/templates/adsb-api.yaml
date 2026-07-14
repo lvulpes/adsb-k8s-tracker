@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: LOG_LEVEL
-              value: "DEBUG"
+              value: "INFO"
             - name: INGESTOR_URL
               value: "http://adsb-ingestor-service/api/v1/enrich"
           ports:

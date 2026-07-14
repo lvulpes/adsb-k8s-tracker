@@ -27,9 +27,18 @@ def calculate_distance(point_1: tuple, point_2: tuple, unit='km') -> float:
 def within_poi(ac_data: dict, poi: dict) -> bool:
     """ Return aircraft if it's inside the poi. """
     if 'lat' not in ac_data or 'lon' not in ac_data:
-        logging.debug(f"No position found in ac dict: {ac_data}")
-        return False
-    ac_pos = (ac_data['lat'], ac_data['lon'])
+        if 'rr_lat' not in ac_data or 'rr_lon' not in ac_data:
+            logging.debug(f"No position found in ac dict: {ac_data}")
+            return False
+        else:
+            # No exact pos, get ground estimate
+            lat_key = 'rr_lat'
+            lon_key = 'rr_lon'
+    else:
+        # Exact pos broadcast by ac
+        lat_key = 'lat'
+        lon_key = 'lon'
+    ac_pos = (ac_data[lat_key], ac_data[lon_key])
     poi_pos = (poi['lat'], poi['lon'])
     dis = calculate_distance(ac_pos, poi_pos, unit=poi['unit'])
     logging.debug(f"Calculated distance for icao {ac_data['hex']} is {dis}")
@@ -82,7 +91,9 @@ def ship_to_ingestor(payload: list) -> None:
         requests.post(INGESTOR_URL, json=payload, timeout=10)
     except requests.exceptions.RequestException as e:
         print(f"Failed to ship payload to ingestor service: {e}")
-    logging.info(f"Shipped to ingestor: {payload}")
+    else:
+        logging.debug(f"Shipped to ingestor: {payload}")
+        logging.info(f"Shipped {len(payload)} aircraft to ingestor")
 
 
 def main() -> None:
@@ -118,8 +129,12 @@ def main() -> None:
             # Do filtering on the data here
             logging.info(f"Sending {len(aircraft_data[query])} to poi_filter")
             filtered_ac = poi_filter(config['poi'][query_filter], aircraft_data[query])
+
             # Push json to ingestor which ships it to database, if any
             if filtered_ac:
+                for ac in filtered_ac:
+                    # Add the filter that was used
+                    ac['filter'] = query_filter
                 ship_to_ingestor(filtered_ac)
             else:
                 logging.warning(f"filter returned {len(filtered_ac)} aircraft for {query_filter}")
