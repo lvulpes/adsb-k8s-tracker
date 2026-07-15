@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADS-B OSINT Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #00ffcc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            background-color: #1e1e1e;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2a2a2a;
+            color: #00ffcc;
+        }
+        tr:hover {
+            background-color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ADS-B Dashboard</h1>
+        
+        <h2>OSINT Aircraft Data</h2>
+        <table id="osint-table">
+            <thead>
+                <tr id="osint-headers">
+                    <!-- Headers will be generated dynamically based on columns -->
+                </tr>
+            </thead>
+            <tbody id="osint-body">
+                <tr><td colspan="100%">Loading data...</td></tr>
+            </tbody>
+        </table>
+
+        <h2>Local Receiver Data (Placeholder)</h2>
+        <table id="local-table">
+            <thead>
+                <tr>
+                    <th>Hex</th>
+                    <th>Flight</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Altitude</th>
+                </tr>
+            </thead>
+            <tbody id="local-body">
+                <tr><td colspan="5">Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to build table dynamically based on API response
+        function populateTable(data, tableBodyId, tableHeaderId = null) {
+            const tbody = document.getElementById(tableBodyId);
+            tbody.innerHTML = ''; // Clear loading text
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="100%">No records found.</td></tr>';
+                return;
+            }
+
+            // Dynamically create headers if a header ID is provided
+            if (tableHeaderId) {
+                const thead = document.getElementById(tableHeaderId);
+                thead.innerHTML = '';
+                const columns = Object.keys(data[0]);
+                columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col.toUpperCase();
+                    thead.appendChild(th);
+                });
+            }
+
+            // Populate rows
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                Object.values(row).forEach(val => {
+                    const td = document.createElement('td');
+                    // Handle nulls gracefully
+                    td.textContent = val !== null ? val : 'N/A';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Fetch OSINT Data
+        fetch('/api/osint')
+            .then(res => res.json())
+            .then(json => populateTable(json.data, 'osint-body', 'osint-headers'))
+            .catch(err => console.error('Error fetching OSINT:', err));
+
+        // Fetch Local Placeholder Data
+        fetch('/api/local')
+            .then(res => res.json())
+            .then(json => populateTable(json.data, 'local-body'))
+            .catch(err => console.error('Error fetching Local:', err));
+    </script>
+</body>
+</html>
