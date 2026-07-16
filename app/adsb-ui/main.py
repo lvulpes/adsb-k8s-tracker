@@ -6,9 +6,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 app = FastAPI(title="ADS-B OSINT Tracker")
+HTML_DIR = os.getenv("STATIC_HTML_DIR", "/app/adsb-ui/static")
 
 # Mount a 'static' directory to serve the frontend HTML/CSS/JS
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/app/static", StaticFiles(directory=HTML_DIR), name="static")
 
 def get_db_connection():
     # Grabs the DSN from the environment variables, injected via Kubernetes secret
@@ -20,7 +21,7 @@ def get_db_connection():
 @app.get("/")
 def read_root():
     # Serve the main frontend page
-    return FileResponse("static/index.html")
+    return FileResponse("/app/static/index.html")
 
 @app.get("/api/osint")
 def get_osint_data():

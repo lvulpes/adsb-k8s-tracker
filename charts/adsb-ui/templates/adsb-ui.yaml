@@ -31,6 +31,8 @@ spec:
               value: "8000"
             - name: LOG_LEVEL
               value: DEBUG
+            - name: STATIC_HTML_DIR
+              value: "/app/adsb-ui/static"
           # Resource limits 
           resources:
             limits:
@@ -50,6 +52,6 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8000
+      targetPort: 8080
   type: ClusterIP
 
