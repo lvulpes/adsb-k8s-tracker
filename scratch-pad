@@ -111,7 +111,7 @@ SELECT DISTINCT ON (a.hex)
     p.alt_baro
 FROM aircraft a
 INNER JOIN position p ON a.hex = p.hex
-ORDER BY a.hex, p.last_updated DESC;
+ORDER BY a.hex, a.last_updated DESC;
 
 # dns issues
 Fixed DNS issues by changing kubectl dns config to use 8.8.8.8 and 1.1.1.1 as dns forwarder instead of local resolver
