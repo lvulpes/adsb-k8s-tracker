@@ -21,7 +21,7 @@ def get_db_connection():
 @app.get("/")
 def read_root():
     # Serve the main frontend page
-    return FileResponse("/app/static/index.html")
+    return FileResponse(f"{HTML_DIR}/index.html")
 
 @app.get("/api/osint")
 def get_osint_data():
