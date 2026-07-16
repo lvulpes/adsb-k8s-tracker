@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
  name: adsb-gateway
 spec:
- ingressClassName: Traefik
+ ingressClassName: traefik
  rules:
  - http:
      paths:

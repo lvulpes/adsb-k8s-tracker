@@ -19,6 +19,7 @@ kubectl create secret generic infisical-auth \
 
 helm upgrade --install cluster-infra ./charts/cluster-infra
 helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/cluster-infra/values.yaml
+helm upgrade --install adsb-gateway ./charts/adsb-gateway
 
 echo "Deploying components..."
 helm upgrade --install adsb-api ./charts/adsb-api
