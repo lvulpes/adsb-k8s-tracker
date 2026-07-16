@@ -12,5 +12,6 @@ package = false
 [tool.uv.workspace]
 members = [
     "app/adsb-api",
-    "app/adsb-ingestor"
+    "app/adsb-ingestor",
+    "app/adsb-ui"
 ]
