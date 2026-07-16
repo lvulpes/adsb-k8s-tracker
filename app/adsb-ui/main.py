@@ -27,11 +27,21 @@ def read_root():
 def get_osint_data():
     """Fetches OSINT aircraft data joined with their most recent position."""
     query = """
-        SELECT a.*, p.lat, p.lon, p.altitude, p.timestamp
+        SELECT 
+            a.*, 
+            p.lat, 
+            p.lon, 
+            p.alt_baro, 
+            p.alt_geom, 
+            p.gs, 
+            p.track, 
+            p.squawk, 
+            p.timestamp
         FROM aircraft a
         LEFT JOIN (
             -- PostgreSQL specific syntax to get the most recent row per hex
-            SELECT DISTINCT ON (hex) hex, lat, lon, altitude, timestamp
+            SELECT DISTINCT ON (hex) 
+                hex, lat, lon, alt_baro, alt_geom, gs, track, squawk, timestamp
             FROM position
             ORDER BY hex, timestamp DESC
         ) p ON a.hex = p.hex;
@@ -54,11 +64,12 @@ def get_local_data():
     return {
         "status": "success", 
         "data": [
-            {"hex": "PLACEHOLDER1", "flight": "TEST1", "lat": 56.1612, "lon": 15.5869, "altitude": 35000},
-            {"hex": "PLACEHOLDER2", "flight": "TEST2", "lat": 56.1712, "lon": 15.5969, "altitude": 24000}
+            {"hex": "PLACEHOLDER1", "flight": "TEST1", "lat": 56.1612, "lon": 15.5869, "alt_baro": 35000},
+            {"hex": "PLACEHOLDER2", "flight": "TEST2", "lat": 56.1712, "lon": 15.5969, "alt_baro": 24000}
         ]
     }
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)
+
