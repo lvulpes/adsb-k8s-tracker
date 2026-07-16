@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: adsb-gateway
+spec:
+ ingressClassName: Traefik
+ rules:
+ - http:
+     paths:
+     - path: /
+       pathType: Prefix
+       backend:
+         service:
+           name: adsb-ui-service
+           port:
+              number: 80
