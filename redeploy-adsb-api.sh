@@ -4,10 +4,12 @@ set -e
 echo "Building images..."
 docker build --build-arg COMPONENT=adsb-api -t adsb-api:local .
 docker build --build-arg COMPONENT=adsb-ingestor -t adsb-ingestor:local .
+docker build --build-arg COMPONENT=adsb-ui -t adsb-ui:local .
 
 echo "Importing to cluster..."
 k3d image import adsb-api:local -c hugin-cluster
 k3d image import adsb-ingestor:local -c hugin-cluster
+k3d image import adsb-ui:local -c hugin-cluster
 
 echo "Deploying infrastructure..."
 kubectl create secret generic infisical-auth \
@@ -16,15 +18,17 @@ kubectl create secret generic infisical-auth \
     --dry-run=client -o yaml | kubectl apply -f -
 
 helm upgrade --install cluster-infra ./charts/cluster-infra
-helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/adsb-db/values.yaml
+helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/cluster-infra/values.yaml
 
 echo "Deploying components..."
 helm upgrade --install adsb-api ./charts/adsb-api
 helm upgrade --install adsb-ingestor ./charts/adsb-ingestor
+helm upgrade --install adsb-ui ./charts/adsb-ui
 
 echo "Restarting deployment..."
 kubectl rollout restart deployment adsb-api-deployment
 kubectl rollout restart deployment adsb-ingestor-deployment
+kubectl rollout restart deployment adsb-ui-deployment
 
 echo -e "\nFinished redeployment! Go ahead and tail the logs:"
-echo "kubectl logs -f -l \"app.kubernetes.io/name in (adsb-api, adsb-ingestor)\""
+echo "kubectl logs -f -l \"app.kubernetes.io/name in (adsb-api, adsb-ingestor, adsb-ui)\""
