@@ -111,15 +111,11 @@ SELECT DISTINCT ON (a.hex)
     p.alt_baro
 FROM aircraft a
 INNER JOIN position p ON a.hex = p.hex
+WHERE a.filter = "baltic"
 ORDER BY a.hex, a.last_updated DESC;
 
 # dns issues
 Fixed DNS issues by changing kubectl dns config to use 8.8.8.8 and 1.1.1.1 as dns forwarder instead of local resolver
 hugin@fedora:~/code/adsb-k8s-tracker$ kubectl edit configmap coredns -n kube-system
 
-# Web server deployment
-1. Add vibed frontend/backend code
-2. Add pyproject toml for imports
-3. Create deployment manifest with the correct env var - secret
-4. Add ClusterIP or whatever to expose the webserver
-5. Spin it up and test it
+# We are currently not filtering on the baltic poi, add it to the configmap by adding a second endpoint
