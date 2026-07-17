@@ -20,10 +20,17 @@ data:
           "url": "https://api.airplanes.live/v2/mil",
           "filter": "baltic",
           "stale_timeout": "2"
+        },
+        "vip-mil-icaos": {
+          "tables": ["aircraft_military", "positions_military"],
+          "url": "https://api.airplanes.live/v2/mil",
+          "filter": "vip_icaos",
+          "stale_timeout": "2"
         }
       },
-      "poi": {
+      "filters": {
         "baltic": {
+          "kind": "poi",
           "coordinates": {
             "lon": "18.512082",
             "lat": "57.470279",
@@ -32,12 +39,20 @@ data:
           }
         },
         "czechia": {
+          "kind": "poi",
           "coordinates": {
             "lon": "16.606836",
             "lat": "49.195061",
             "distance": "500",
             "unit": "km"
           }
+        },
+        "vip_icaos": {
+          "kind": "icao",
+          "icao_list": [
+            "4aecd2",
+            "8960b1"
+          ]
         }
       }
     }

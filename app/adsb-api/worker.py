@@ -48,6 +48,10 @@ def poi_filter(filter_conf: dict, aircraft: list) -> list:
     """ Return list of aircraft inside the poi. """
     return [ac for ac in aircraft if within_poi(ac, filter_conf['coordinates'])]
 
+def icao_filter(filter_conf: dict, aircraft: list) -> list:
+    """ Return list of aicraft on the list. """
+    return [ac for ac in aircraft if ac['hex'].lower() in filter_conf['icao_list']]
+
 def get_adsb_feed(url: str) -> dict:
     """ Get aircraft data from API given by , return json. """
     headers = {
@@ -58,18 +62,18 @@ def get_adsb_feed(url: str) -> dict:
 
     except requests.exceptions.Timeout as e:
         # Crucial for a background loop so one stalled request doesn't hang the worker
-        logging.error(f"ADS-B Exchange API timeout occurred: {e}")
+        logging.error(f"ADS-B API timeout occurred: {e}")
         # Target for a backoff or simple pass to try again on the next tick
 
     except requests.exceptions.HTTPError as e:
         # Catches 4xx/5xx responses (e.g., rate limits, bad API key, service down)
-        logging.error(f"ADS-B Exchange returned an HTTP error status: {e}")
+        logging.error(f"ADS-B API returned an HTTP error status: {e}")
         if e.response.status_code == 429:
             logging.warning("Rate limit hit. Implementing backing off strategy.")
 
     except requests.exceptions.ConnectionError as e:
         # Catches DNS failures, network drops, or API endpoint routing changes
-        logging.error(f"Failed to connect to ADS-B Exchange server: {e}")
+        logging.error(f"Failed to connect to ADS-B API server: {e}")
 
     except requests.exceptions.RequestException as e:
         # Catch-all for any ambiguous issues handling the request itself
@@ -123,12 +127,25 @@ def main() -> None:
             query_filter = endpoint_config['filter']
 
             # Check that the filter is defined
-            if query_filter not in config['poi']:
+            if query_filter not in config['filters']:
                 raise KeyError("Chosen filter is not defined")
+            
+            # Get the filter config
+            filter_config = config['filters'][query_filter]
 
-            # Do filtering on the data here
-            logging.info(f"Sending {len(aircraft_data[query])} to poi_filter")
-            filtered_ac = poi_filter(config['poi'][query_filter], aircraft_data[query])
+            # Check what kind of filter it is
+            if filter_config['kind'] == 'poi':
+                # Do poi filtering
+                logging.info(f"Sending {len(aircraft_data[query])} to poi_filter")
+                filtered_ac = poi_filter(filter_config, aircraft_data[query])
+            elif filter_config['kind'] == 'icao':
+                # Do icao filtering
+                logging.info(f"Sending {len(aircraft_data[query])} to icao_filter")
+                filtered_ac = icao_filter(filter_config, aircraft_data[query])
+                logging.info(f"Got {len(filtered_ac)} aircraft from icao filter")
+            elif filter_config['kind'] == 'callsign':
+                # Do callsign filtering
+                raise NotImplementedError("callsign filtering is not implemented")
 
             # Push json to ingestor which ships it to database, if any
             if filtered_ac:
