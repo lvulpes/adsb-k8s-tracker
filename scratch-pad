@@ -111,11 +111,15 @@ SELECT DISTINCT ON (a.hex)
     p.alt_baro
 FROM aircraft a
 INNER JOIN position p ON a.hex = p.hex
-WHERE a.filter = "baltic"
+WHERE a.filter = 'baltic'
 ORDER BY a.hex, a.last_updated DESC;
 
 # dns issues
 Fixed DNS issues by changing kubectl dns config to use 8.8.8.8 and 1.1.1.1 as dns forwarder instead of local resolver
 hugin@fedora:~/code/adsb-k8s-tracker$ kubectl edit configmap coredns -n kube-system
 
-# We are currently not filtering on the baltic poi, add it to the configmap by adding a second endpoint
+# Add icao filtering capabilities by slightly changing how different filters are handled in the main loop of adsb-api
+Add a "kind" field to each filter config, use poi and icao as kinds. The business logic needs to check which filter kind it is
+and then send the aircraft data to that filter implementation. It must then mark the name of the filter as it does now
+so that the filter column in the db is set correctly. The icao filter needs to take a list of icaos, so that multiple
+frames can be fit in to the same filter. 
