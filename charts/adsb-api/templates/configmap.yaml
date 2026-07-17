@@ -9,10 +9,16 @@ data:
   config.json: |
     {
       "endpoints": {
-        "mil": {
+        "mil-central-europe": {
           "tables": ["aircraft_military", "positions_military"],
           "url": "https://api.airplanes.live/v2/mil",
           "filter": "czechia",
+          "stale_timeout": "2"
+        },
+        "mil-baltic": {
+          "tables": ["aircraft_military", "positions_military"],
+          "url": "https://api.airplanes.live/v2/mil",
+          "filter": "baltic",
           "stale_timeout": "2"
         }
       },
