@@ -26,7 +26,7 @@ helm repo update
 
 echo "Installing ESO CRD..."
 # 2. Install the operator itself and force CRD creation
-helm install external-secrets external-secrets/external-secrets \
+helm upgrade --install external-secrets external-secrets/external-secrets \
     --namespace external-secrets \
     --create-namespace \
     --set installCRDs=true
