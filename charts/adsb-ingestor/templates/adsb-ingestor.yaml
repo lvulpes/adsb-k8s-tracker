@@ -23,7 +23,7 @@ spec:
           args: ["adsb-ingestor/main.py"]
           env:
             - name: DECODER_URL
-              value: "http://adsb-decoder/data/aircraft.json"
+              value: "http://adsb-decoder-service/data/aircraft.json"
             - name: DECODER_PORT
               value: "30003"
             - name: DB_DSN
