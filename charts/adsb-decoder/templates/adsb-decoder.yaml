@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-decoder-deployment
+  labels:
+    app.kubernetes.io/name: adsb-decoder
+    app.kubernetes.io/component: decoder
+spec:
+  replicas: 0 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: adsb-decoder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: adsb-decoder
+    spec:
+      containers:
+        - name: readsb
+          image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - name: usb-bus
+            mountPath: /dev/bus/usb
+          # Resource limits 
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+      - name: usb-bus
+        hostPath:
+          path: /dev/bus/usb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-decoder-service
+spec:
+  selector:
+    app.kubernetes.io/name: adsb-decoder
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
