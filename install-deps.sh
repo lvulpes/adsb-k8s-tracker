@@ -58,12 +58,16 @@ else
     echo "kubectl is already installed, skipping..."
 fi
 
+# install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # 6. Validation
 echo "--- Validating Installations ---"
 docker --version
 k3d --version
 helm version --short
 kubectl version --client --output=yaml | grep gitVersion
+uv --version
 
 echo ""
 echo "✅ All dependencies installed!"
