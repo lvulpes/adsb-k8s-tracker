@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
 set -e
 
+# get cluster name from arg
+if [[ "$1" != "" ]]; then
+    CLUSTER_NAME=$1
+    echo "Redeploying in cluster $CLUSTER_NAME..."
+elif [[ "$1" == "" ]]; then
+    echo "Using default cluster name hugin-cluster"
+    CLUSTER_NAME="hugin-cluster"
+fi
+
 echo "Building images..."
 docker build --build-arg COMPONENT=adsb-api -t adsb-api:local .
 docker build --build-arg COMPONENT=adsb-ingestor -t adsb-ingestor:local .
 docker build --build-arg COMPONENT=adsb-ui -t adsb-ui:local .
 
 echo "Importing to cluster..."
-k3d image import adsb-api:local -c hugin-cluster
-k3d image import adsb-ingestor:local -c hugin-cluster
-k3d image import adsb-ui:local -c hugin-cluster
+k3d image import adsb-api:local -c $CLUSTER_NAME
+k3d image import adsb-ingestor:local -c $CLUSTER_NAME
+k3d image import adsb-ui:local -c $CLUSTER_NAME
 
 echo "Deploying infrastructure..."
 kubectl create secret generic infisical-auth \
