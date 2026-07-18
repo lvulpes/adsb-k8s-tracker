@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: adsb-decoder
     app.kubernetes.io/component: decoder
 spec:
-  replicas: 0 
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: adsb-decoder
