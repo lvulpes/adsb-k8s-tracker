@@ -13,10 +13,10 @@ fi
 
 if [ "$INFISICAL_CLIENT_SECRET" = "" ] || [ "$INFISICAL_TOKEN" = "" ] || [ "$INFISICAL_CLIENT_ID" = "" ]; then
     echo "Infisical env variables must be set!"
+    exit 1
 else
     echo "Infisical env variables are set, proceeding with installation..."
 fi
-exit
 
 k3d cluster create $MY_CLUSTER -p "8080:80@loadbalancer"
 
