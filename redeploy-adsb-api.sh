@@ -10,6 +10,8 @@ elif [[ "$1" == "" ]]; then
     CLUSTER_NAME="hugin-cluster"
 fi
 
+uv sync
+
 echo "Building images..."
 docker build --build-arg COMPONENT=adsb-api -t adsb-api:local .
 docker build --build-arg COMPONENT=adsb-ingestor -t adsb-ingestor:local .
