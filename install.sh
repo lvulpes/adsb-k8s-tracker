@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Stop execution if any command fails
+set -e
+
 echo "Installing project from scratch"
 
 if [[ "$1" != "" ]]; then
