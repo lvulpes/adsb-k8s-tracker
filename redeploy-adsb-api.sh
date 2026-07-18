@@ -27,11 +27,13 @@ echo "Deploying components..."
 helm upgrade --install adsb-api ./charts/adsb-api
 helm upgrade --install adsb-ingestor ./charts/adsb-ingestor
 helm upgrade --install adsb-ui ./charts/adsb-ui
+helm upgrade --install adsb-decoder ./charts/adsb-decoder
 
 echo "Restarting deployment..."
 kubectl rollout restart deployment adsb-api-deployment
 kubectl rollout restart deployment adsb-ingestor-deployment
 kubectl rollout restart deployment adsb-ui-deployment
+kubectl rollout restart deployment adsb-decoder-deployment
 
 echo -e "\nFinished redeployment! Go ahead and tail the logs:"
 echo "kubectl logs -f -l \"app.kubernetes.io/name in (adsb-api, adsb-ingestor, adsb-ui)\""
