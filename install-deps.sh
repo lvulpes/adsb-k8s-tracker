@@ -8,8 +8,8 @@ if [[ "$1" != "" ]]; then
     echo "Installing dependencies for user $1"
     USER_NAME=$1
 elif [[ "$1" == "" ]]; then
-    echo "Need at least 1 arg!" \
-        exit
+    echo "Need at least 1 arg!"
+    exit 1
 fi
 
 echo "☕ Starting fika-fueled dependency installation for Pi 5..."
