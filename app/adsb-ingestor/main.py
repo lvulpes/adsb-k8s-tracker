@@ -112,6 +112,8 @@ async def fetch_decoder_data(session, url, pool):
                     data = await response.json()
                     aircraft_list = data.get("aircraft", data) if isinstance(data, dict) else data
                     logging.info(f"Adding in-situ filter to {len(aircraft_list)} aircraft records")
+                    for ac in aircraft_list:
+                        ac['filter'] = 'in-situ'
                     await upsert_aircraft_data(pool, aircraft_list, "adsb-decoder")
                 else:
                     logging.warning(f"adsb-decoder returned status {response.status}")
