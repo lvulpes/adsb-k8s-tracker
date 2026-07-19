@@ -22,10 +22,10 @@ spec:
           command: ["python"]
           args: ["adsb-ingestor/main.py"]
           env:
-            - name: DECODER_URL
-              value: "http://adsb-decoder-service:8080/data/aircraft.json"
             - name: DECODER_PORT
-              value: "30003"
+              value: "80"
+            - name: DECODER_URL
+              value: "http://adsb-decoder-service:$(DECODER_PORT)/data/aircraft.json"
             - name: DB_DSN
               valueFrom: 
                 secretKeyRef:
