@@ -28,9 +28,10 @@ kubectl create secret generic infisical-auth \
     --from-literal=clientSecret="$INFISICAL_CLIENT_SECRET" \
     --dry-run=client -o yaml | kubectl apply -f -
 
-helm upgrade --install cluster-infra ./charts/cluster-infra
 echo "Waiting for External Secrets webhook to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=external-secrets-webhook -n external-secrets --timeout=60s
+
+helm upgrade --install cluster-infra ./charts/cluster-infra
 helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/cluster-infra/values.yaml
 helm upgrade --install adsb-gateway ./charts/adsb-gateway
 
