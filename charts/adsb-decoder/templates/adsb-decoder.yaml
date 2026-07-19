@@ -16,9 +16,27 @@ spec:
         app.kubernetes.io/name: adsb-decoder
     spec:
       containers:
-        - name: readsb
-          image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
+        - name: adsb-decoder
+          image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:latest
           imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: "Europe/Stockholm"
+            - name: LAT
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-location-secret
+                  key: location_lat
+            - name: LONG
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-location-secret
+                  key: location_lon
+            - name: ALT
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-location-secret
+                  key: location_alt
           securityContext:
             privileged: true
           volumeMounts:
@@ -47,6 +65,6 @@ spec:
   clusterIP: None
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 80
+      targetPort: 80
 
