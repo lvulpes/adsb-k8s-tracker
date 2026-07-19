@@ -22,7 +22,6 @@ else
 fi
 
 k3d cluster create $MY_CLUSTER \
-    --port "8080:80@loadbalancer" \
     --network host \
     --k3s-arg "--flannel-backend=host-gw@server:0"
 
