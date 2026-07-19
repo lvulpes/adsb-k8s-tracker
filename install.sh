@@ -21,7 +21,9 @@ else
     echo "Infisical env variables are set, proceeding with installation..."
 fi
 
-k3d cluster create $MY_CLUSTER -p "8080:80@loadbalancer"
+k3d cluster create $MY_CLUSTER \
+    --network host \
+    --k3s-arg "--flannel-backend=host-gw@server:0"
 
 # 1. Add the official ESO repository
 helm repo add external-secrets https://charts.external-secrets.io
