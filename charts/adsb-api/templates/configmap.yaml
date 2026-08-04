@@ -51,7 +51,8 @@ data:
           "kind": "icao",
           "icao_list": [
             "4aecd2",
-            "8960b1"
+            "8960b1",
+            "0a4026"
           ]
         }
       }
