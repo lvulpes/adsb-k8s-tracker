@@ -4,5 +4,5 @@ filters:
     - 4aecd2
     - 0a4026
 endpoints:
-  airplanes-live:
+  airplanesLive:
     mil: "https://api.airplanes.live/v2/mil"
