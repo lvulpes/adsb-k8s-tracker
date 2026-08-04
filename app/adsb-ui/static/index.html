@@ -15,6 +15,25 @@
         h1, h2 {
             color: #00ffcc;
         }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-container {
+            background-color: #1e1e1e;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+        select {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border: 1px solid #00ffcc;
+            padding: 5px;
+            border-radius: 4px;
+            outline: none;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -57,7 +76,16 @@
     <div class="container">
         <h1>ADS-B Dashboard</h1>
         
-        <h2>OSINT Aircraft Data</h2>
+        <div class="header-bar">
+            <h2>OSINT Aircraft Data</h2>
+            <div class="filter-container">
+                <label for="osint-filter"><strong>Filter Category: </strong></label>
+                <select id="osint-filter">
+                    <option value="NONE">NONE</option>
+                </select>
+            </div>
+        </div>
+        
         <table id="osint-table">
             <thead>
                 <tr id="osint-headers">
@@ -87,10 +115,10 @@
     <script>
         const DISPLAY_LIMIT = 10;
         
-        // State management for pagination
+        // State management for pagination and filtering
         const state = {
-            osint: { data: [], currentIndex: 0 },
-            local: { data: [], currentIndex: 0 }
+            osint: { data: [], filteredData: [], currentIndex: 0 },
+            local: { data: [], filteredData: [], currentIndex: 0 }
         };
 
         function renderHeaders(data, headerId) {
@@ -105,17 +133,47 @@
             });
         }
 
+        function populateDropdown(data) {
+            const select = document.getElementById('osint-filter');
+            // Extract unique filter values, ignoring null/undefined
+            const uniqueFilters = [...new Set(data.map(item => item.filter).filter(Boolean))];
+            
+            uniqueFilters.forEach(f => {
+                const option = document.createElement('option');
+                option.value = f;
+                option.textContent = f;
+                select.appendChild(option);
+            });
+
+            // Add event listener for dropdown changes
+            select.addEventListener('change', (e) => {
+                const selectedValue = e.target.value;
+                
+                if (selectedValue === 'NONE') {
+                    state.osint.filteredData = state.osint.data;
+                } else {
+                    state.osint.filteredData = state.osint.data.filter(item => item.filter === selectedValue);
+                }
+                
+                // Reset index and clear table to prepare for fresh render
+                state.osint.currentIndex = 0;
+                document.getElementById('osint-body').innerHTML = '';
+                renderRows('osint');
+            });
+        }
+
         function renderRows(type) {
             const tbody = document.getElementById(`${type}-body`);
             const btn = document.getElementById(`btn-${type}`);
-            const dataset = state[type].data;
+            const dataset = state[type].filteredData; // Use filtered dataset
             let index = state[type].currentIndex;
 
-            // Clear loading text on first run
+            // Clear loading text on first run of a fresh view
             if (index === 0) tbody.innerHTML = ''; 
 
             if (dataset.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="100%">No records found.</td></tr>';
+                btn.style.display = 'none';
                 return;
             }
 
@@ -144,9 +202,15 @@
 
         function initTable(type, data) {
             state[type].data = data;
+            state[type].filteredData = data; // Initially identical
             state[type].currentIndex = 0;
             
             renderHeaders(data, `${type}-headers`);
+            
+            if (type === 'osint') {
+                populateDropdown(data);
+            }
+
             renderRows(type);
             
             // Attach event listener to the load more button
