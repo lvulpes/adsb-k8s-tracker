@@ -34,11 +34,17 @@
             border-radius: 4px;
             outline: none;
         }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
             background-color: #1e1e1e;
+            white-space: nowrap; /* Keeps data on a single line */
         }
         th, td {
             padding: 12px;
@@ -53,7 +59,7 @@
             background-color: #333;
         }
         .container {
-            max-width: 1200px;
+            width: 100%; /* Changed from max-width to utilize the whole screen */
             margin: auto;
         }
         .btn-load-more {
@@ -86,29 +92,33 @@
             </div>
         </div>
         
-        <table id="osint-table">
-            <thead>
-                <tr id="osint-headers">
-                    <!-- Headers generated dynamically -->
-                </tr>
-            </thead>
-            <tbody id="osint-body">
-                <tr><td colspan="100%">Loading data...</td></tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="osint-table">
+                <thead>
+                    <tr id="osint-headers">
+                        <!-- Headers generated dynamically -->
+                    </tr>
+                </thead>
+                <tbody id="osint-body">
+                    <tr><td colspan="100%">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
         <button id="btn-osint" class="btn-load-more">Load More</button>
 
         <h2>Local Receiver Data</h2>
-        <table id="local-table">
-            <thead>
-                <tr id="local-headers">
-                     <!-- Headers generated dynamically -->
-                </tr>
-            </thead>
-            <tbody id="local-body">
-                <tr><td colspan="100%">Loading data...</td></tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="local-table">
+                <thead>
+                    <tr id="local-headers">
+                         <!-- Headers generated dynamically -->
+                    </tr>
+                </thead>
+                <tbody id="local-body">
+                    <tr><td colspan="100%">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
         <button id="btn-local" class="btn-load-more">Load More</button>
     </div>
 
