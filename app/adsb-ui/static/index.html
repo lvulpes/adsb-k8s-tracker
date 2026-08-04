@@ -59,7 +59,7 @@
             background-color: #333;
         }
         .container {
-            width: 100%; /* Changed from max-width to utilize the whole screen */
+            width: 100%; 
             margin: auto;
         }
         .btn-load-more {
@@ -193,7 +193,19 @@
                 const tr = document.createElement('tr');
                 Object.values(row).forEach(val => {
                     const td = document.createElement('td');
-                    td.textContent = val !== null ? val : 'N/A';
+                    
+                    if (val !== null) {
+                        // Check if value is a string and looks like an ISO date (e.g., 2026-08-04T12:53:22...)
+                        if (typeof val === 'string' && val.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+                            // Slice to 19 characters to drop everything after the seconds and replace 'T' with a space
+                            td.textContent = val.substring(0, 19).replace('T', ' ');
+                        } else {
+                            td.textContent = val;
+                        }
+                    } else {
+                        td.textContent = 'N/A';
+                    }
+                    
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);
