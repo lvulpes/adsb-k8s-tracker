@@ -25,7 +25,7 @@ def read_root():
 
 @app.get("/api/osint")
 def get_osint_data():
-    """Fetches OSINT aircraft data joined with their most recent position."""
+    """Fetches OSINT aircraft data joined with their most recent position, sorted by last seen."""
     query = """
         SELECT 
             a.*, 
@@ -44,7 +44,8 @@ def get_osint_data():
                 hex, lat, lon, alt_baro, alt_geom, gs, track, squawk, timestamp
             FROM position
             ORDER BY hex, timestamp DESC
-        ) p ON a.hex = p.hex;
+        ) p ON a.hex = p.hex
+        ORDER BY a.last_updated DESC;
     """
     try:
         conn = get_db_connection()
@@ -78,7 +79,8 @@ def get_local_data():
             FROM position
             ORDER BY hex, timestamp DESC
         ) p ON a.hex = p.hex
-        WHERE a.filter = 'in-situ';
+        WHERE a.filter = 'in-situ'
+        ORDER BY a.last_updated DESC;
     """
     try:
         conn = get_db_connection()
