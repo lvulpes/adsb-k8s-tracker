@@ -11,18 +11,19 @@ data:
       "endpoints": {
         "mil-central-europe": {
           "tables": ["aircraft_military", "positions_military"],
-          "url": "https://api.airplanes.live/v2/mil",
+          "url": "{{ .Values.endpoints.airplanesLive.mil }}",
           "filter": "czechia",
           "stale_timeout": "2"
         },
         "mil-baltic": {
           "tables": ["aircraft_military", "positions_military"],
-          "url": "https://api.airplanes.live/v2/mil",
+          "url": "{{ .Values.endpoints.airplanesLive.mil }}",
           "filter": "baltic",
           "stale_timeout": "2"
         },
         "vip-mil-icaos": {
           "tables": ["aircraft_military", "positions_military"],
+          "url": "{{ .Values.endpoints.airplanesLive.mil }}",
           "url": "https://api.airplanes.live/v2/mil",
           "filter": "vip_icaos",
           "stale_timeout": "2"
@@ -49,10 +50,7 @@ data:
         },
         "vip_icaos": {
           "kind": "icao",
-          "icao_list": [
-            "4aecd2",
-            "8960b1"
-          ]
+          "icao_list": {{ toJson .Values.filters.vip_icaos }}
         }
       }
     }
