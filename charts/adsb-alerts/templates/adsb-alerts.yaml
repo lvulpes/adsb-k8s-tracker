@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-alerts-deployment
+  labels:
+    app.kubernetes.io/name: adsb-alerts
+    app.kubernetes.io/component: alerts
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: adsb-alerts
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: adsb-alerts
+    spec:
+      containers:
+        - name: adsb-alerts
+          image: adsb-alerts:local
+          imagePullPolicy: IfNotPresent
+          command: ["python"]
+          args: ["adsb-alerts/main.py"]
+          env:
+            - name: DB_DSN
+              valueFrom: 
+                secretKeyRef:
+                  name: adsb-db-credentials
+                  key: database_dsn
+            - name: DISCORD_WEBHOOK
+              valueFrom: 
+                secretKeyRef:
+                  name: adsb-alerts-secret
+                  key: discord_webhhok_adsb_alerts
+            - name: SLEEP_INTERVAL
+              value: "60"
+            - name: LOG_LEVEL
+              value: DEBUG
+          # Resource limits 
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            # This name refers to the storage block to grab and mount in the file system of this container
+            - name: adsb-alerts-config
+              mountPath: /app/adsb-alerts/config.json
+              subPath: config.json
+              readOnly: true
+      volumes:
+        # This name defines the identity of the storage volume at the pod level
+        - name: adsb-alerts-config
+          configMap:
+            # This is the name of the configmap in the Helm chart
+            name: adsb-alerts-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-alerts-service
+spec:
+  selector:
+    app.kubernetes.io/name: adsb-alerts
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+
