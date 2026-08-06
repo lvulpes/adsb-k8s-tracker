@@ -21,6 +21,12 @@ data:
           "filter": "baltic",
           "stale_timeout": "2"
         },
+        "mil-hormuz": {
+          "tables": ["aircraft_military", "positions_military"],
+          "url": "{{ .Values.endpoints.airplanesLive.mil }}",
+          "filter": "hormuz",
+          "stale_timeout": "2"
+        },
         "vip-mil-icaos": {
           "tables": ["aircraft_military", "positions_military"],
           "url": "{{ .Values.endpoints.airplanesLive.mil }}",
@@ -45,6 +51,15 @@ data:
             "lon": "16.606836",
             "lat": "49.195061",
             "distance": "500",
+            "unit": "km"
+          }
+        },
+        "hormuz": {
+          "kind": "poi",
+          "coordinates": {
+            "lon": "56.496600",
+            "lat": "26.571151",
+            "distance": "300",
             "unit": "km"
           }
         },
