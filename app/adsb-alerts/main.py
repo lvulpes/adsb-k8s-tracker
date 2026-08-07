@@ -13,6 +13,7 @@ CONFIG_PATH = os.getenv("FILTER_PATH", '/app/adsb-alerts/filters.json')
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 ALERT_PARAMS = os.getenv("ALERT_PARAMS", "hex, flight")
+MAX_DISCORD_RETRIES = os.getenv("MAX_DISCORD_RETRIES", "3")
 
 # Configure logging
 logging.basicConfig(
@@ -58,18 +59,30 @@ async def dispatch_alert(session, ac: dict, webhook: str):
         "content": f"**Aircraft Alert!**\n```json\n{json.dumps(alert_data, indent=2)}\n```"
     }
    # Send the payload to discord 
-    try:
-        async with session.post(url=webhook, json=payload) as response:
-            if response.ok:
-                return True
+    for attempt in range(int(MAX_DISCORD_RETRIES)):
+        try:
+            async with session.post(url=webhook, json=payload) as response:
+                if response.ok:
+                    return True
 
-            # log failures
-            error = await response.text()
-            logging.error(f"Failed to send alert to discord with {response.status}: {error}")
+                if response.status == 429:
+                    # Rate limiting, back off dynamically, default to 1s
+                    res_json = response.json()
+                    retry_after = res_json.get('retry_after', 1.0)
+                    logging.warning(f"""
+                        Discord rate limiting encountered,backing off for
+                        {retry_after} s, attempt {attempt + 1}/{MAX_DISCORD_RETRIES}
+                    """)
+                    await asyncio.sleep(retry_after)
+                    continue
+
+                # log failures
+                error = await response.text()
+                logging.error(f"Failed to send alert to discord with {response.status}: {error}")
+                return False
+        except aiohttp.ClientError() as e:
+            logging.error(f"Networking error sending webhook: {e}")
             return False
-    except aiohttp.ClientError() as e:
-        logging.error(f"Networking error sending webhook: {e}")
-        return False
 
 async def main():
     db_pool = await asyncpg.create_pool(dsn=DB_DSN)
@@ -88,7 +101,6 @@ async def main():
 
                 # 3. Process results
                 for ac in new_aircraft:
-                    logging.debug(f"Checking filter for ac {ac['hex']}")
                     # Check all filters for each aircraft
                     for f_name, f_conf in ac_filters.items():
                         matching_ac = filter_aircraft(ac, f_conf)
