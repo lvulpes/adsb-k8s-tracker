@@ -30,8 +30,17 @@ def read_filters(file_path: str) -> list[str]:
 async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
     """ Fetch the latest added aircraft from the DB. """
     query = """
-        SELECT *
-        FROM aircraft
+        SELECT 
+            a.*, 
+            p.* 
+        FROM aircraft a
+        LEFT JOIN (
+            -- PostgreSQL specific syntax to get the most recent row per hex
+            SELECT DISTINCT ON (hex) 
+                hex, lat, lon, alt_baro, alt_geom, gs, track, squawk, timestamp
+            FROM position
+            ORDER BY hex, timestamp DESC
+        ) p ON a.hex = p.hex
         WHERE last_updated >= NOW() - ($1 || ' seconds')::interval
     """
     
