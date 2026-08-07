@@ -41,7 +41,7 @@ async def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
     """ Return an aircraft is it matches an alert filter."""
     if not ac_filter:
         return {}
-    for k, expected_value in ac_filter.keys():
+    for k, expected_value in ac_filter.items():
         if k not in ac or ac[k] != expected_value:
             # Either key not in ac data or value does not match
             return {}
