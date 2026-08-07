@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-alerts-config
+  labels:
+    app: adsb-alerts
+    component: config
+data:
+  filters.json: |
+    {
+      "test_icao": {
+        "hex": "ae07ec"
+      },
+      "test_baltic_icao" : {
+        "hex": "ae0584",
+        "filter": "baltic"
+      }
+    }
+
