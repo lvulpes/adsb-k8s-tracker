@@ -6,7 +6,7 @@ import os
 import asyncpg
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:password@adsb-db:5432/adsb")
-SLEEP_INTERVAL = int(os.getenv("SLEEP_INTERVAL", "60"))
+SLEEP_INTERVAL = os.getenv("SLEEP_INTERVAL", "60")
 CONFIG_PATH = os.getenv("FILTER_PATH", '/app/adsb-alerts/filters.json')
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -23,7 +23,7 @@ def read_filters(file_path: str) -> list[str]:
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-async def fetch_last_aircraft(pool, max_age_seconds: int) -> list:
+async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
     query = """
         SELECT *
         FROM aircraft
@@ -70,7 +70,7 @@ async def main():
                         logging.info(f"Found match for aircraft {ac['hex']} in filter {f_name}")
                         
             logging.info(f"Found match for aircraft {ac['hex']}")
-            await asyncio.sleep(SLEEP_INTERVAL)
+            await asyncio.sleep(int(SLEEP_INTERVAL))
     finally:
         await db_pool.close()
 
