@@ -7,7 +7,7 @@ import asyncpg
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:password@adsb-db:5432/adsb")
 SLEEP_INTERVAL = int(os.getenv("SLEEP_INTERVAL", "60"))
-CONFIG_PATH = os.getenv("FILTER_PATH", '/adsb-alerts/filters.json')
+CONFIG_PATH = os.getenv("FILTER_PATH", '/app/adsb-alerts/filters.json')
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 

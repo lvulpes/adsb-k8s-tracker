@@ -9,10 +9,10 @@ data:
   filters.json: |
     [
       "test_icao": {
-        "hex": "cba321"
+        "hex": "ae07ec"
       },
-        "test_baltic_icao" : {
-        "hex": "abc123",
+      "test_baltic_icao" : {
+        "hex": "ae0584",
         "filter": "baltic"
       }
     ]
