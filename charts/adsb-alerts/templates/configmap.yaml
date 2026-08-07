@@ -6,7 +6,7 @@ metadata:
     app: adsb-alerts
     component: config
 data:
-  config.json: |
+  filters.json: |
     [
       "test_icao": {
         "hex": "cba321"
