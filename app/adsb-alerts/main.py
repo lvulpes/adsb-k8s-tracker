@@ -1,10 +1,22 @@
 import asyncio
-import asyncpg
 import json
+import logging
+import os
+
+import asyncpg
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:password@adsb-db:5432/adsb")
-SLEEP_INTERVAL = os.getenv("SLEEP_INTERVAL", 60)
+SLEEP_INTERVAL = int(os.getenv("SLEEP_INTERVAL", "60"))
 CONFIG_PATH = os.getenv("FILTER_PATH", '/adsb-alerts/filters.json')
+DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logging.info(f"Logger initialized at level: {LOG_LEVEL}")
 
 def read_filters(file_path: str) -> list[str]:
     """Reads mounted ConfigMap from disk."""
@@ -25,7 +37,7 @@ async def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
     for k in ac_filter.keys():
         if k in ac.keys():
             # We found one matching filter name
-                logging.debug(f"Found matching key {k} on aircraft {ac['hex']}")
+            logging.debug(f"Found matching key {k} on aircraft {ac['hex']}")
             if ac_filter[k] == ac[k]:
                 # We found a match on this specific filter parameter, but need to check ALL
                 logging.debug(f"Found match for {k}: {ac[k]} == {ac_filter[k]}")
@@ -64,4 +76,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\nStopped.")
-
