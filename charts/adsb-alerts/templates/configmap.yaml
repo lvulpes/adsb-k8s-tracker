@@ -22,6 +22,9 @@ data:
       "local_sas_2": {
         "flight": "SAS019",
         "filter": "in-situ"
+      },
+      "hormuz_test": {
+        "hex": "ae63be",
+        "filter": "hormuz"
       }
     }
-
