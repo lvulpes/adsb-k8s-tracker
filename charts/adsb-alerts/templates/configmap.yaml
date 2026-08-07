@@ -18,6 +18,10 @@ data:
       "local_sas": {
         "flight": "SAS46C",
         "filter": "in-situ"
+      },
+      "local_sas_2": {
+        "flight": "SAS019",
+        "filter": "in-situ"
       }
     }
 
