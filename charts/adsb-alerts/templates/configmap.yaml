@@ -7,7 +7,7 @@ metadata:
     component: config
 data:
   filters.json: |
-    [
+    {
       "test_icao": {
         "hex": "ae07ec"
       },
@@ -15,5 +15,5 @@ data:
         "hex": "ae0584",
         "filter": "baltic"
       }
-    ]
+    }
 

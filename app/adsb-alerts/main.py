@@ -64,8 +64,11 @@ async def main():
             for ac in new_aircraft:
                 logging.debug(f"Checking filter for ac {ac['hex']}")
                 # Check all filters for each aircraft
-                for ac_filter in ac_filter_list:
-                    matching_ac = filter_aircraft(ac, ac_filter)
+                for f_name, f_conf in ac_filters.items():
+                    matching_ac = filter_aircraft(ac, f_conf)
+                    if matching_ac:
+                        logging.info(f"Found match for aircraft {ac['hex']} in filter {f_name}")
+                        
             logging.info(f"Found match for aircraft {ac['hex']}")
             await asyncio.sleep(SLEEP_INTERVAL)
     finally:
