@@ -12,7 +12,7 @@ data:
         "hex": "ae07ec"
       },
       "test_baltic_icao" : {
-        "hex": "78026e",
+        "hex": "ae688d",
         "filter": "baltic"
       },
       "local_sas": {
