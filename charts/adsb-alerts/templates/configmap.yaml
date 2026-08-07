@@ -12,8 +12,19 @@ data:
         "hex": "ae07ec"
       },
       "test_baltic_icao" : {
-        "hex": "ae0584",
+        "hex": "ae688d",
         "filter": "baltic"
+      },
+      "local_sas": {
+        "flight": "SAS46C",
+        "filter": "in-situ"
+      },
+      "local_sas_2": {
+        "flight": "SAS019",
+        "filter": "in-situ"
+      },
+      "hormuz_test": {
+        "hex": "ae63be",
+        "filter": "hormuz"
       }
     }
-

@@ -38,6 +38,10 @@ spec:
               value: DEBUG
             - name: FILTER_PATH
               value: /app/adsb-alerts/filters.json
+            - name: ALERT_PARAMS
+              value: "hex, flight, lat, lon, alt_baro, squawk, description"
+            - name: MAX_DISCORD_RETRIES
+              value: "3"
           # Resource limits 
           resources:
             limits:
