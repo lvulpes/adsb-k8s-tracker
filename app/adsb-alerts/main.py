@@ -39,18 +39,13 @@ async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
 
 async def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
     """ Return an aircraft is it matches an alert filter."""
-    for k in ac_filter.keys():
-        if k in ac.keys():
-            # We found one matching filter name
-            logging.debug(f"Found matching key {k} on aircraft {ac['hex']}")
-            if ac_filter[k] == ac[k]:
-                # We found a match on this specific filter parameter, but need to check ALL
-                logging.debug(f"Found match for {k}: {ac[k]} == {ac_filter[k]}")
-                continue
-            else:
-                # No match, stop looking
-                return {}
-    # If we reach the end it means we had a match on all filter parameters
+    if not ac_filter:
+        return {}
+    for k, expected_value in ac_filter.keys():
+        if k not in ac or ac[k] != expected_value:
+            # Either key not in ac data or value does not match
+            return {}
+    # end of loop is only reached if every key is present and matches
     return ac
 
 async def dispatch_alert(session, ac: dict, webhook: str):
