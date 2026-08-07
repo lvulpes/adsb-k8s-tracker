@@ -37,7 +37,7 @@ async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
     async with pool.acquire() as conn:
         return await conn.fetch(query, max_age_seconds)
 
-async def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
+def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
     """ Return an aircraft is it matches an alert filter."""
     if not ac_filter:
         return {}
