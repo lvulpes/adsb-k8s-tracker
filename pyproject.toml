@@ -13,5 +13,6 @@ package = false
 members = [
     "app/adsb-api",
     "app/adsb-ingestor",
-    "app/adsb-ui"
+    "app/adsb-ui",
+    "app/adsb-alerts"
 ]
