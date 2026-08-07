@@ -55,7 +55,7 @@ async def main():
     try:
         while True:
             # 1. Non-blocking ConfigMap read (via thread)
-            ac_filter_list = await asyncio.to_thread(read_filters, CONFIG_PATH)
+            ac_filters = await asyncio.to_thread(read_filters, CONFIG_PATH)
 
             # 2. Non-blocking DB query
             new_aircraft = await fetch_last_aircraft(db_pool, SLEEP_INTERVAL)
