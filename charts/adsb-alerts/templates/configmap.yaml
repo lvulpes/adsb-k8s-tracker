@@ -14,6 +14,10 @@ data:
       "test_baltic_icao" : {
         "hex": "78026e",
         "filter": "baltic"
+      },
+      "local_sas": {
+        "flight": "SAS46C",
+        "filter": "in-situ"
       }
     }
 
