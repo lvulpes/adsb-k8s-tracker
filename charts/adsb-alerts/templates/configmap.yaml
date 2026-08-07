@@ -11,9 +11,9 @@ data:
       "test_icao": {
         "hex": "cba321"
       },
-	  "test_baltic_icao" : {
-		"hex": "abc123",
-		"filter": "baltic"
-	  }
-	]
+        "test_baltic_icao" : {
+        "hex": "abc123",
+        "filter": "baltic"
+      }
+    ]
 
