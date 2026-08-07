@@ -53,7 +53,7 @@ async def dispatch_alert(session, ac: dict, webhook: str):
     """ Send alert to discord."""
     # Create a list of the fields to alert on
     alert_params = [k.strip() for k in ALERT_PARAMS.split(',') if k.strip()]
-    logging.debug(f"Looking for alert params: {alert_params} in {list(ac.keys()}")
+    logging.debug(f"Looking for alert params: {alert_params} in {list(ac.keys())}")
     # Copy the data we want to send in the alert from the ac dict
     alert_data = {k: ac[k] for k in alert_params if k in ac}
     logging.debug(f"Using alert_data: {alert_data}")
