@@ -109,6 +109,7 @@ async def main():
 
                 # 2. Non-blocking DB query
                 new_aircraft = await fetch_last_aircraft(db_pool, SLEEP_INTERVAL)
+                logging.debug(f"Received {len(new_aircraft)} from database")
 
                 # 3. Process results
                 for ac in new_aircraft:
