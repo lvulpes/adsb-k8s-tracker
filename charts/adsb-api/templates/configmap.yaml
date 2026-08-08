@@ -33,6 +33,12 @@ data:
           "url": "https://api.airplanes.live/v2/mil",
           "filter": "vip_icaos",
           "stale_timeout": "2"
+        },
+        "lla-kallax": {
+          "tables": ["aircraft", "position"],
+          "url": "{{ .Values.endpoints.airplanesLive.lla }}",
+          "filter": "no_filter",
+          "stale_timeout": "2"
         }
       },
       "filters": {
