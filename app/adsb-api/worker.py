@@ -143,6 +143,10 @@ def main() -> None:
                 logging.info(f"Sending {len(aircraft_data[query])} to icao_filter")
                 filtered_ac = icao_filter(filter_config, aircraft_data[query])
                 logging.info(f"Got {len(filtered_ac)} aircraft from icao filter")
+            elif filter_config['kind'] == 'no_filter':
+                # Do not filter
+                filtered_ac = aircraft_data[query]
+                logging.info(f"Received {len(filtered_ac)} on no_filter")
             elif filter_config['kind'] == 'callsign':
                 # Do callsign filtering
                 raise NotImplementedError("callsign filtering is not implemented")
