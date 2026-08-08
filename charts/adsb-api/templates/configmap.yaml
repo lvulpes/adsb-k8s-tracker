@@ -72,6 +72,9 @@ data:
         "vip_icaos": {
           "kind": "icao",
           "icao_list": {{ toJson .Values.filters.vip_icaos }}
+        },
+        "no_filter": {
+          "kind": "no_filter",
         }
       }
     }
