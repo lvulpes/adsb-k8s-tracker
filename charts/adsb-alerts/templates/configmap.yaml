@@ -26,5 +26,8 @@ data:
       "hormuz_test": {
         "hex": "ae63be",
         "filter": "hormuz"
+      },
+      "lla_no_filter": {
+        "filter": "lla_no_filter"
       }
     }
