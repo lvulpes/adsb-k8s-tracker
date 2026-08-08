@@ -37,7 +37,7 @@ data:
         "lla-kallax": {
           "tables": ["aircraft", "position"],
           "url": "{{ .Values.endpoints.airplanesLive.lla }}",
-          "filter": "no_filter",
+          "filter": "lla_no_filter",
           "stale_timeout": "2"
         }
       },
@@ -73,7 +73,7 @@ data:
           "kind": "icao",
           "icao_list": {{ toJson .Values.filters.vip_icaos }}
         },
-        "no_filter": {
+        "lla_no_filter": {
           "kind": "no_filter",
         }
       }
