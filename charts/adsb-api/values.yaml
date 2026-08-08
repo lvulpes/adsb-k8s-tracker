@@ -1,7 +1,5 @@
 filters:
   vip_icaos:
-    - 8960b1
-    - 4aecd2
     - 0a4026
 endpoints:
   airplanesLive:
