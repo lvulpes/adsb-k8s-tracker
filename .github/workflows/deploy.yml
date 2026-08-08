@@ -1,0 +1,15 @@
+name: Continuous Deployment to Raspberry Pi
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Check out main branch
+        uses: actions/checkout@v4
+      - name: Execute deployment script
+        run: |
+          ./redeploy-adsb-api.sh rpi-server-cluster
+
