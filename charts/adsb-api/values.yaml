@@ -6,3 +6,4 @@ filters:
 endpoints:
   airplanesLive:
     mil: "https://api.airplanes.live/v2/mil"
+    lla: "https://api.airplanes.live/v2/point/65.543908/22.121288/2000"
