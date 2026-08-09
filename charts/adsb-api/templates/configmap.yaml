@@ -41,7 +41,7 @@ data:
         },
         "4ca448-track": {
           "tables": ["aircraft", "position"],
-          "url": "{{ .Values.endpoints.airplanesLive.4ca448 }}",
+          "url": "{{ .Values.endpoints.airplanesLive.vip_4ca448 }}",
           "filter": "bc_no_filter",
           "stale_timeout": "2"
         }
