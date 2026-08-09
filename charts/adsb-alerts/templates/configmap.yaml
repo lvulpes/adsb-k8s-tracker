@@ -16,8 +16,9 @@ data:
         "filter": "baltic"
       },
       "local_sas": {
-        "flight": "SAS46C",
-        "filter": "in-situ"
+        "flight": "SAS010",
+        "filter": "in-situ",
+        "filter_text": "Seen by the local RTL-SDR dawg"
       },
       "local_sas_2": {
         "flight": "SAS019",
