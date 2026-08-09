@@ -35,7 +35,7 @@ spec:
             - name: SLEEP_INTERVAL
               value: "15"
             - name: LOG_LEVEL
-              value: DEBUG
+              value: INFO
             - name: FILTER_PATH
               value: /app/adsb-alerts/filters.json
             - name: ALERT_PARAMS
