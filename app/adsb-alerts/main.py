@@ -119,7 +119,8 @@ async def main():
                         if matching_ac:
                             logging.info(f"Found match for aircraft {ac['hex']} in filter {f_name}")
                             # Alert to discord if this alert is not already active
-                            if ac.get('hex') not in active_alerts:
+                            if (ac.get('hex') not in active_alerts and
+                               f_conf.get('status', 'enabled').lower() == 'enabled'):
                                 # Send alert to discord
                                 success = await dispatch_alert(session, ac, DISCORD_WEBHOOK)
                                 if success:
