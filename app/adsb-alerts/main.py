@@ -58,13 +58,15 @@ def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
     # end of loop is only reached if every key is present and matches
     return ac
 
-async def dispatch_alert(session, ac: dict, webhook: str):
+async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
     """ Send alert to discord."""
     # Create a list of the fields to alert on
     alert_params = [k.strip() for k in ALERT_PARAMS.split(',') if k.strip()]
-    logging.debug(f"Looking for alert params: {alert_params} in {list(ac.keys())}")
     # Copy the data we want to send in the alert from the ac dict
     alert_data = {k: ac[k] for k in alert_params if k in ac}
+    # Add filter text if present
+    if 'filter_text' in f_conf:
+        alert_data['filter_text'] = f_conf['filter_text']
     logging.debug(f"Using alert_data: {alert_data}")
     payload = {
         "content": f"**Aircraft Alert!**\n```json\n{json.dumps(alert_data, indent=2)}\n```"
@@ -122,7 +124,7 @@ async def main():
                             if (ac.get('hex') not in active_alerts and
                                f_conf.get('status', 'enabled').lower() == 'enabled'):
                                 # Send alert to discord
-                                success = await dispatch_alert(session, ac, DISCORD_WEBHOOK)
+                                success = await dispatch_alert(session, ac, DISCORD_WEBHOOK, f_conf)
                                 if success:
                                     logging.debug(f"Successfully sent alert to discord for hex {ac['hex']}")
                                     active_alerts[ac['hex']] = datetime.now(timezone.utc)
