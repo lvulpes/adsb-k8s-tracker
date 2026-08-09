@@ -29,5 +29,8 @@ data:
       },
       "lla_no_filter": {
         "filter": "lla_no_filter"
+      },
+      "bc_no_filter": {
+        "filter": "bc_no_filter"
       }
     }

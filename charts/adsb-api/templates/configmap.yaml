@@ -30,7 +30,6 @@ data:
         "vip-mil-icaos": {
           "tables": ["aircraft_military", "positions_military"],
           "url": "{{ .Values.endpoints.airplanesLive.mil }}",
-          "url": "https://api.airplanes.live/v2/mil",
           "filter": "vip_icaos",
           "stale_timeout": "2"
         },
@@ -38,6 +37,12 @@ data:
           "tables": ["aircraft", "position"],
           "url": "{{ .Values.endpoints.airplanesLive.lla }}",
           "filter": "lla_no_filter",
+          "stale_timeout": "2"
+        },
+        "4ca448-track": {
+          "tables": ["aircraft", "position"],
+          "url": "{{ .Values.endpoints.airplanesLive.4ca448 }}",
+          "filter": "bc_no_filter",
           "stale_timeout": "2"
         }
       },
@@ -74,6 +79,9 @@ data:
           "icao_list": {{ toJson .Values.filters.vip_icaos }}
         },
         "lla_no_filter": {
+          "kind": "no_filter"
+        },
+        "bc_no_filter": {
           "kind": "no_filter"
         }
       }
