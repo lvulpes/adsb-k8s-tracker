@@ -106,31 +106,37 @@ async def main():
 
         try:
             while True:
-                # 1. Non-blocking ConfigMap read (via thread)
+                # Non-blocking ConfigMap read (via thread)
                 ac_filters = await asyncio.to_thread(read_filters, CONFIG_PATH)
 
-                # 2. Non-blocking DB query
+                # Non-blocking DB query, fetches last updated since SLEEP_INTERVAL
                 new_aircraft = await fetch_last_aircraft(db_pool, SLEEP_INTERVAL)
                 logging.debug(f"Received {len(new_aircraft)} from database")
 
-                # 3. Process results
+                # Process results
                 for ac in new_aircraft:
                     # Check all filters for each aircraft
+                    hex_code = ac.get('hex')
+
                     for f_name, f_conf in ac_filters.items():
-                        matching_ac = filter_aircraft(ac, f_conf)
-                        if matching_ac:
-                            logging.info(f"Found match for aircraft {ac['hex']} in filter {f_name}")
-                            # Alert to discord if this alert is not already active
-                            if (ac.get('hex') not in active_alerts and
-                               f_conf.get('status', 'enabled').lower() == 'enabled'):
-                                # Send alert to discord
-                                success = await dispatch_alert(session, ac, DISCORD_WEBHOOK, f_conf)
-                                if success:
-                                    logging.debug(f"Successfully sent alert to discord for hex {ac['hex']}")
-                                    active_alerts[ac['hex']] = datetime.now(timezone.utc)
-                                else:
-                                    logging.warning(f"Failed to send alert for hex {ac.get('hex')}")
-                
+                        if not filter_aircraft(ac, f_conf):
+                            continue
+                        if f_conf.get("status", "enabled").lower() != 'enabled':
+                            continue
+                        logging.info(f"Found match for aircraft {hex_code} in filter {f_name}")
+                        
+                        # If alert is already active, update timestamp
+                        if hex_code in active_alerts:
+                            active_alerts[hex_code] = datetime.now(timezone.utc)
+                            continue
+                        # New alert, dispatch notification
+                        success = await dispatch_alert(session, ac, DISCORD_WEBHOOK, f_conf)
+                        if success:
+                            logging.debug(f"Successfully sent alert to discord for hex {hex_code}")
+                            active_alerts[ac['hex']] = datetime.now(timezone.utc)
+                        else:
+                            logging.warning(f"Failed to send alert for hex {ac.get('hex')}")
+                            
                 # Cleanup active alerts older than 1 hour (3600 seconds)
                 now = datetime.now(timezone.utc)
                 active_alerts = {
