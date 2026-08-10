@@ -8,34 +8,32 @@ metadata:
 data:
   filters.json: |
     {
-      "test_icao": {
-        "hex": "ae07ec"
-      },
       "test_baltic_icao" : {
         "hex": "ae688d",
-        "filter": "baltic"
+        "filter": "baltic",
+        "filter_text": "US Navy maritime patrol and reconnaissance"
       },
       "local_sas": {
         "flight": "SAS010",
         "filter": "in-situ",
         "filter_text": "Seen by the local RTL-SDR dawg"
       },
-      "local_sas_2": {
-        "flight": "SAS019",
-        "filter": "in-situ"
-      },
       "hormuz_test": {
         "hex": "ae63be",
-        "filter": "hormuz"
+        "filter": "hormuz",
+        "status": "disabled"
       },
       "lla_no_filter": {
         "filter": "lla_no_filter",
-        "status": "disabled"
+        "status": "disabled",
+        "filter_text": "Spotted at LLA"
       },
       "bc_no_filter": {
-        "filter": "bc_no_filter"
+        "filter": "bc_no_filter",
+        "status": "disabled"
       },
       "vip_no_filter": {
-        "filter": "vip_no_filter"
+        "filter": "vip_no_filter",
+        "filter_text": "NATO AEW&C component"
       }
     }
