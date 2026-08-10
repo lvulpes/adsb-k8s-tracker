@@ -6,3 +6,4 @@ endpoints:
     mil: "https://api.airplanes.live/v2/mil"
     lla: "https://api.airplanes.live/v2/point/65.543908/22.121288/2"
     vip_4ca448: "https://api.airplanes.live/v2/hex/4ca448"
+    vip_4d03c3: "https://api.airplanes.live/v2/hex/4d03c3"
