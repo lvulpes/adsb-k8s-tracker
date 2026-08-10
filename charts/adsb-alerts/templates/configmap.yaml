@@ -34,5 +34,8 @@ data:
       },
       "bc_no_filter": {
         "filter": "bc_no_filter"
+      },
+      "vip_no_filter": {
+        "filter": "vip_no_filter"
       }
     }
