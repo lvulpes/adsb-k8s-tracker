@@ -36,14 +36,13 @@ data:
         },
         "filter": "in-situ",
         "flight": "SAS\d+",
-      }
+      },
       "re_test_2": {
         "metadata": {
           "status": "enabled",
           "filter_text": "Test regex matching in-situ"
         },
         "filter": "in-situ",
-        "flight": "SAS\d+",
-      },
+        "flight": "SAS\d+"
       }
     }
