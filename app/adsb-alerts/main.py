@@ -103,7 +103,7 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
                 error = await response.text()
                 logging.error(f"Failed to send alert to discord with {response.status}: {error}")
                 return False
-        except aiohttp.ClientError() as e:
+        except aiohttp.ClientError as e:
             logging.error(f"Networking error sending webhook: {e}")
             return False
 
@@ -155,7 +155,7 @@ async def main():
                     if (now - ts).total_seconds() < 3600
                 }
 
-                await asyncio.sleep(int(SLEEP_INTERVAL))
+                await asyncio.sleep(int(SLEEP_INTERVAL) - 1)
         finally:
             await db_pool.close()
 
