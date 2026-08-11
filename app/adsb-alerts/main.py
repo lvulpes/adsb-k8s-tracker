@@ -44,7 +44,7 @@ async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
         ) p ON a.hex = p.hex
         WHERE last_updated >= NOW() - ($1 || ' seconds')::interval
     """
-    
+
     async with pool.acquire() as conn:
         return await conn.fetch(query, max_age_seconds)
 
@@ -57,9 +57,9 @@ def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
         ac_filter = filter_conf
     if not ac_filter:
         return {}
-        
+
     for k, expected_value in ac_filter.items():
-        re_pattern = r"^{expected_value}$"
+        re_pattern = fr"^{expected_value}$"
         if k not in ac or not re.fullmatch(re_pattern, ac[k]):
             # Either key not in ac data or value does not match
             return {}
@@ -76,12 +76,12 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
     metadata = f_conf.get('metadata') or {}
     if 'filter_text' in metadata:
         alert_data['filter_text'] = metadata['filter_text']
-    
+
     logging.debug(f"Using alert_data: {alert_data}")
     payload = {
         "content": f"**Aircraft Alert!**\n```json\n{json.dumps(alert_data, indent=2)}\n```"
     }
-   # Send the payload to discord 
+    # Send the payload to discord
     for attempt in range(int(MAX_DISCORD_RETRIES)):
         try:
             async with session.post(url=webhook, json=payload) as response:
@@ -108,6 +108,7 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
             return False
 
 async def main():
+    """ Send alerts to discord for new flights based on configs. """
     db_pool = await asyncpg.create_pool(dsn=DB_DSN)
     active_alerts = {}
 
@@ -134,7 +135,7 @@ async def main():
                         if f_conf.get("status", "enabled").lower() != 'enabled':
                             continue
                         logging.info(f"Found match for aircraft {hex_code} in filter {f_name}")
-                        
+
                         # If alert is already active, update timestamp
                         if hex_code in active_alerts:
                             active_alerts[hex_code] = datetime.now(timezone.utc)
@@ -146,14 +147,14 @@ async def main():
                             active_alerts[ac['hex']] = datetime.now(timezone.utc)
                         else:
                             logging.warning(f"Failed to send alert for hex {ac.get('hex')}")
-                            
+
                 # Cleanup active alerts older than 1 hour (3600 seconds)
                 now = datetime.now(timezone.utc)
                 active_alerts = {
-                    hex_code: ts for hex_code, ts in active_alerts.items() 
+                    hex_code: ts for hex_code, ts in active_alerts.items()
                     if (now - ts).total_seconds() < 3600
                 }
-                
+
                 await asyncio.sleep(int(SLEEP_INTERVAL))
         finally:
             await db_pool.close()
