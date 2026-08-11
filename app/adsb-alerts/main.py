@@ -132,7 +132,7 @@ async def main():
                     for f_name, f_conf in ac_filters.items():
                         if not filter_aircraft(ac, f_conf):
                             continue
-                        if f_conf.get("status", "enabled").lower() != 'enabled':
+                        if f_conf.get("metadata", {}).get("status", "enabled").lower() != 'enabled':
                             continue
                         logging.info(f"Found match for aircraft {hex_code} in filter {f_name}")
 
