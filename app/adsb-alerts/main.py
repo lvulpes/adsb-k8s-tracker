@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import json
 import logging
 import os
+import re
 
 import aiohttp
 import asyncpg
@@ -47,12 +48,19 @@ async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
     async with pool.acquire() as conn:
         return await conn.fetch(query, max_age_seconds)
 
-def filter_aircraft(ac: dict, ac_filter: dict) -> dict:
+def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
     """ Return an aircraft is it matches an alert filter."""
+    if 'metadata' in ac_filter:
+        ac_filter = filter_conf.copy()
+        ac_filter.pop("metadata")
+    else:
+        ac_filter = filter_conf
     if not ac_filter:
         return {}
+        
     for k, expected_value in ac_filter.items():
-        if k not in ac or ac[k] != expected_value:
+        re_pattern = r"^{expected_value}$"
+        if k not in ac or not re.fullmatch(re_pattern, ac[k]):
             # Either key not in ac data or value does not match
             return {}
     # end of loop is only reached if every key is present and matches
@@ -64,9 +72,11 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
     alert_params = [k.strip() for k in ALERT_PARAMS.split(',') if k.strip()]
     # Copy the data we want to send in the alert from the ac dict
     alert_data = {k: ac[k] for k in alert_params if k in ac}
-    # Add filter text if present
-    if 'filter_text' in f_conf:
-        alert_data['filter_text'] = f_conf['filter_text']
+    # Add filter text from metadata
+    metadata = f_conf.get('metadata') or {}
+    if 'filter_text' in metadata:
+        alert_data['filter_text'] = metadata['filter_text']
+    
     logging.debug(f"Using alert_data: {alert_data}")
     payload = {
         "content": f"**Aircraft Alert!**\n```json\n{json.dumps(alert_data, indent=2)}\n```"

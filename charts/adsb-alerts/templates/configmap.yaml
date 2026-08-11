@@ -35,5 +35,21 @@ data:
       "vip_no_filter": {
         "filter": "vip_no_filter",
         "filter_text": "NATO AEW&C component"
+      },
+      "re_test_1": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Test regex matching LLA"
+        },
+        "filter": "in-situ",
+        "flight": "SAS\d+",
+      }
+      "re_test_2": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Test regex matching in-situ"
+        },
+        "filter": "in-situ",
+        "flight": "SAS\d+",
       }
     }
