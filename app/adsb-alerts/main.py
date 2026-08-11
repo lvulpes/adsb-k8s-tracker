@@ -60,8 +60,10 @@ def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
 
     for k, expected_value in ac_filter.items():
         re_pattern = fr"^{expected_value}$"
+        logging.debug(f"Using regex: {re_pattern}")
         if k not in ac or not re.fullmatch(re_pattern, str(ac[k])):
             # Either key not in ac data or value does not match
+            logging.debug(f"No match for {ac[k]}")
             return {}
     # end of loop is only reached if every key is present and matches
     return ac
