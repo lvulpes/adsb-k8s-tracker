@@ -39,7 +39,7 @@ data:
       },
       "re_test_2": {
         "metadata": {
-          "status": "enabled",
+          "status": "disabled",
           "filter_text": "Test regex matching in-situ"
         },
         "filter": "in-situ",
@@ -47,7 +47,7 @@ data:
       },
       "in_situ_alert_all": {
         "metadata": {
-          "status": "enabled",
+          "status": "disabled",
           "filter_text": "Seen by the local RTL-SDR"
         },
         "filter": "in-situ"
