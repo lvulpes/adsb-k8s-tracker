@@ -44,5 +44,12 @@ data:
         },
         "filter": "in-situ",
         "flight": "SAS\d+"
+      },
+      "in_situ_alert_all": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Seen by the local RTL-SDR"
+        },
+        "filter": "in-situ"
       }
     }
