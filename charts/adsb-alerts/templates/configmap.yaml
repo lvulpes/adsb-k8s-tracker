@@ -9,31 +9,41 @@ data:
   filters.json: |
     {
       "test_baltic_icao" : {
+        "metadata": {
+          "filter_text": "US Navy maritime patrol and reconnaissance",
+          "status": "enabled"
+        },
         "hex": "ae688d",
-        "filter": "baltic",
-        "filter_text": "US Navy maritime patrol and reconnaissance"
-      },
-      "local_sas": {
-        "flight": "SAS010",
-        "filter": "in-situ",
-        "filter_text": "Seen by the local RTL-SDR dawg"
-      },
-      "hormuz_test": {
-        "hex": "ae63be",
-        "filter": "hormuz",
-        "status": "disabled"
+        "filter": "baltic"
       },
       "lla_no_filter": {
-        "filter": "lla_no_filter",
-        "status": "disabled",
-        "filter_text": "Spotted at LLA"
-      },
-      "bc_no_filter": {
-        "filter": "bc_no_filter",
-        "status": "disabled"
+        "metadata": {
+          "filter_text": "Spotted at LLA",
+          "status": "disabled"
+        },
+        "filter": "lla_no_filter"
       },
       "vip_no_filter": {
-        "filter": "vip_no_filter",
-        "filter_text": "NATO AEW&C component"
+        "metadata": {
+          "filter_text": "NATO AEW&C component"
+        },
+        "filter": "vip_no_filter"
+      },
+      "re_test_1": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Test regex matching LLA"
+        },
+        "filter": "in-situ",
+        "flight": "SAS\d+",
+      }
+      "re_test_2": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Test regex matching in-situ"
+        },
+        "filter": "in-situ",
+        "flight": "SAS\d+",
+      },
       }
     }
