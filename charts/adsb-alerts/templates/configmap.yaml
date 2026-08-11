@@ -34,7 +34,7 @@ data:
           "status": "enabled",
           "filter_text": "Test regex matching LLA"
         },
-        "filter": "in-situ",
+        "filter": "lla_no_filter",
         "flight": "SAS\d+",
       },
       "re_test_2": {
