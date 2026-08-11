@@ -10,6 +10,7 @@ import asyncpg
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:password@adsb-db:5432/adsb")
 SLEEP_INTERVAL = os.getenv("SLEEP_INTERVAL", "60")
+DB_INTERVAL = os.getenv("DB_INTERVAL", "90")
 CONFIG_PATH = os.getenv("FILTER_PATH", '/app/adsb-alerts/filters.json')
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -63,7 +64,7 @@ def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
         logging.debug(f"Using regex: {re_pattern} from filter {filter_conf}")
         if k not in ac or not re.fullmatch(re_pattern, str(ac[k])):
             # Either key not in ac data or value does not match
-            logging.debug(f"No match for {ac[k]} or {re_pattern}")
+            logging.debug(f"No match for either {k} or {re_pattern}")
             return {}
     # end of loop is only reached if every key is present and matches
     logging.info(f"Found match for {ac.get('hex')} using regex {re_pattern}")
@@ -124,7 +125,7 @@ async def main():
                 ac_filters = await asyncio.to_thread(read_filters, CONFIG_PATH)
 
                 # Non-blocking DB query, fetches last updated since SLEEP_INTERVAL
-                new_aircraft = await fetch_last_aircraft(db_pool, SLEEP_INTERVAL)
+                new_aircraft = await fetch_last_aircraft(db_pool, DB_INTERVAL)
                 logging.debug(f"Received {len(new_aircraft)} from database")
 
                 # Process results

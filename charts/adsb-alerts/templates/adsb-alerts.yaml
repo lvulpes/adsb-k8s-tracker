@@ -33,7 +33,9 @@ spec:
                   name: adsb-alerts-secret
                   key: discord_webhhok_adsb_alerts
             - name: SLEEP_INTERVAL
-              value: "15"
+              value: "60"
+            - name: DB_INTERVAL
+              value: "90"
             - name: LOG_LEVEL
               value: DEBUG
             - name: FILTER_PATH
