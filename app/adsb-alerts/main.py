@@ -50,7 +50,7 @@ async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
 
 def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
     """ Return an aircraft is it matches an alert filter."""
-    if 'metadata' in ac_filter:
+    if 'metadata' in filter_conf:
         ac_filter = filter_conf.copy()
         ac_filter.pop("metadata")
     else:
