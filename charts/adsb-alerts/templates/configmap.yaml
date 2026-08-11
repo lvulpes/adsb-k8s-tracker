@@ -35,7 +35,7 @@ data:
           "filter_text": "Test regex matching LLA"
         },
         "filter": "lla_no_filter",
-        "flight": "SAS\d+",
+        "flight": "SAS\d+"
       },
       "re_test_2": {
         "metadata": {
@@ -44,5 +44,12 @@ data:
         },
         "filter": "in-situ",
         "flight": "SAS\d+"
+      },
+      "in_situ_alert_all": {
+        "metadata": {
+          "status": "enabled",
+          "filter_text": "Seen by the local RTL-SDR"
+        },
+        "filter": "in-situ"
       }
     }
