@@ -60,7 +60,7 @@ def filter_aircraft(ac: dict, filter_conf: dict) -> dict:
 
     for k, expected_value in ac_filter.items():
         re_pattern = fr"^{expected_value}$"
-        if k not in ac or not re.fullmatch(re_pattern, ac[k]):
+        if k not in ac or not re.fullmatch(re_pattern, str(ac[k])):
             # Either key not in ac data or value does not match
             return {}
     # end of loop is only reached if every key is present and matches
@@ -90,7 +90,7 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
 
                 if response.status == 429:
                     # Rate limiting, back off dynamically, default to 1s
-                    res_json = response.json()
+                    res_json = await response.json()
                     retry_after = res_json.get('retry_after', 1.0)
                     logging.warning(f"""
                         Discord rate limiting encountered,backing off for
