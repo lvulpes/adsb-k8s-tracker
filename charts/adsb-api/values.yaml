@@ -3,7 +3,7 @@ filters:
     - 0a4026
 endpoints:
   airplanesLive:
-    mil: "https://api.airplanes.live/v2/mil"
-    lla: "https://api.airplanes.live/v2/point/65.543908/22.121288/2"
-    vip_4ca448: "https://api.airplanes.live/v2/hex/4ca448"
-    vip_4d03c3: "https://api.airplanes.live/v2/hex/4d03c3"
+    mil: "https://opendata.adsb.fi/api/v2/mil"
+    lla: "https://opendata.adsb.fi/api/v3/lat/65.543908/lon/22.121288/dist/2"
+    vip_4ca448: "https://opendata.adsb.fi/api/v2/hex/4ca448"
+    vip_4d03c3: "https://opendata.adsb.fi/api/v2/hex/4d03c3"
