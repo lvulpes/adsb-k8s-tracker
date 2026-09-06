@@ -76,30 +76,44 @@ async def upsert_aircraft_data(pool, aircraft_list, source):
                 if not hex_code:
                     continue
 
+                flight = ac.get("flight", "").strip() or None
+                category = ac.get("category")
+
+                # Handle readsb's "ground" string for numeric altitude columns
+                raw_alt_baro = ac.get("alt_baro")
+                alt_baro = None if (raw_alt_baro == "ground" or raw_alt_baro is None) else int(raw_alt_baro)
+
+                raw_alt_geom = ac.get("alt_geom")
+                alt_geom = None if (raw_alt_geom == "ground" or raw_alt_geom is None) else int(raw_alt_geom)
+
                 await conn.execute('''
-                    INSERT INTO aircraft (hex, flight, registration, type_code, description, operator, category, filter, last_updated)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+                    INSERT INTO aircraft (hex, flight, category, filter, last_updated)
+                    VALUES ($1, $2, $3, $4, NOW())
                     ON CONFLICT (hex) DO UPDATE SET
                         flight = COALESCE(EXCLUDED.flight, aircraft.flight),
-                        registration = COALESCE(EXCLUDED.registration, aircraft.registration),
-                        type_code = COALESCE(EXCLUDED.type_code, aircraft.type_code),
-                        description = COALESCE(EXCLUDED.description, aircraft.description),
-                        operator = COALESCE(EXCLUDED.operator, aircraft.operator),
                         category = COALESCE(EXCLUDED.category, aircraft.category),
                         filter = COALESCE(EXCLUDED.filter, aircraft.filter),
                         last_updated = NOW();
                 ''', 
-                hex_code, ac.get("flight", "").strip() if ac.get("flight") else None, 
-                ac.get("r"), ac.get("t"), ac.get("desc"), ac.get("ownOp"), ac.get("category"),
-                ac.get("filter"))
+                hex_code, flight if ac.get("flight") else None, ac.get("category"), ac.get("filter"))
 
-                if ac.get("lat") is not None and ac.get("lon") is not None:
+                # Check if we have coordinates OR at least altitude/speed telemetry
+                has_coords = ac.get("lat") is not None and ac.get("lon") is not None
+                has_telemetry = alt_baro is not None or ac.get("gs") is not None
+
+                if has_coords or has_telemetry:
                     await conn.execute('''
-                        INSERT INTO position (hex, lat, lon, alt_baro, alt_geom, gs, track, squawk)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        INSERT INTO position (hex, lat, lon, alt_baro, alt_geom, gs, track, squawk, timestamp)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
                     ''', 
-                    hex_code, ac.get("lat"), ac.get("lon"), ac.get("alt_baro"),
-                    ac.get("alt_geom"), ac.get("gs"), ac.get("track"), ac.get("squawk"))
+                    hex_code, 
+                    ac.get("lat"), 
+                    ac.get("lon"), 
+                    alt_baro, 
+                    alt_geom, 
+                    ac.get("gs"), 
+                    ac.get("track"), 
+                    ac.get("squawk"))
 
     logging.info(f"Processed {len(aircraft_list)} records from {source}")
 
