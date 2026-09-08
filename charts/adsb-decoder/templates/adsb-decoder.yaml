@@ -39,6 +39,12 @@ spec:
                 secretKeyRef:
                   name: adsb-location-secret
                   key: location_alt
+            - name: MLAT_USER
+              value: halmstad-01-rtl-sdr
+            - name: ULTRAFEEDER_CONFIG
+              value: >-
+                adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
+                mlat,feed.adsb.fi,31090;
           securityContext:
             privileged: true
           volumeMounts:
