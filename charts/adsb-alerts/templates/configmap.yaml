@@ -58,7 +58,7 @@ data:
         },
         "filter": "vip_no_filter"
       },
-      "vip_no_filter": {
+      "vip_svf_korpen": {
         "metadata": {
           "filter_text": "Swedish Airforce Korpen"
         },
