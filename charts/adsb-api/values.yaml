@@ -7,3 +7,4 @@ endpoints:
     lla: "https://opendata.adsb.fi/api/v3/lat/65.543908/lon/22.121288/dist/2"
     vip_4ca448: "https://opendata.adsb.fi/api/v2/hex/4ca448"
     vip_4d03c3: "https://opendata.adsb.fi/api/v2/hex/4d03c3"
+    vip_4a81f8: "https://opendata.adsb.fi/api/v2/hex/4a81f8"

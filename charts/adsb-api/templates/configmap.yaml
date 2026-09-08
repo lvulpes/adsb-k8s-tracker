@@ -50,6 +50,12 @@ data:
           "url": "{{ .Values.endpoints.airplanesLive.vip_4d03c3 }}",
           "filter": "vip_no_filter",
           "stale_timeout": "2"
+        },
+        "4a81f8-track": {
+          "tables": ["aircraft", "position"],
+          "url": "{{ .Values.endpoints.airplanesLive.vip_4a81f8 }}",
+          "filter": "vip_svf_korpen",
+          "stale_timeout": "2"
         }
       },
       "filters": {
@@ -91,6 +97,9 @@ data:
           "kind": "no_filter"
         },
         "vip_no_filter": {
+          "kind": "no_filter"
+        },
+        "vip_svf_korpen": {
           "kind": "no_filter"
         }
       }
