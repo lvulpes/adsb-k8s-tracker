@@ -51,5 +51,17 @@ data:
           "filter_text": "Seen by the local RTL-SDR"
         },
         "filter": "in-situ"
+      },
+      "vip_no_filter": {
+        "metadata": {
+          "filter_text": "NATO AEW&C component"
+        },
+        "filter": "vip_no_filter"
+      },
+      "vip_svf_korpen": {
+        "metadata": {
+          "filter_text": "Swedish Airforce Korpen"
+        },
+        "filter": "vip_svf_korpen"
       }
     }
