@@ -44,6 +44,8 @@ spec:
               value: "hex, flight, lat, lon, alt_baro, squawk, description"
             - name: MAX_DISCORD_RETRIES
               value: "3"
+            - name: TRACKING_URL
+              value: "https://globe.adsbexchange.com/?icao="
           # Resource limits 
           resources:
             limits:

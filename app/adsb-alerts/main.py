@@ -16,6 +16,7 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 ALERT_PARAMS = os.getenv("ALERT_PARAMS", "hex, flight")
 MAX_DISCORD_RETRIES = os.getenv("MAX_DISCORD_RETRIES", "3")
+TRACKING_URL = os.getenv("TRACKING_URL", "")
 
 # Configure logging
 logging.basicConfig(
@@ -80,6 +81,9 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
     metadata = f_conf.get('metadata') or {}
     if 'filter_text' in metadata:
         alert_data['filter_text'] = metadata['filter_text']
+
+    if TRACKING_URL:
+        alert_data['url'] = TRACKING_URL + alert_data['hex']
 
     logging.debug(f"Using alert_data: {alert_data}")
     payload = {
