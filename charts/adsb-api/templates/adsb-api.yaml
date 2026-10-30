@@ -45,9 +45,8 @@ spec:
       volumes:
         # This name defines the identity of the storage volume at the pod level
         - name: adsb-api-config
-          configMap:
-            # This is the name of the configmap in the Helm chart
-            name: adsb-api-config
+          secret:
+            secretName: adsb-api-secret
 ---
 apiVersion: v1
 kind: Service
@@ -61,4 +60,3 @@ spec:
       port: 80
       targetPort: 80
   type: ClusterIP
-
