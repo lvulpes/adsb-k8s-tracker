@@ -6,10 +6,10 @@ This is a learning project to get familiar with ads-b reception using SDR, deplo
 
 # Function
 - A local server pulls adsb data from public API endpoints
-- Pulled data is filtered according to [filter rules](./charts/adsb-api/templates/configmap.yaml) and stored in a postgresql db
+- Pulled data is filtered according to filter rules (Infisical key `api_flights.json`, synced via [ExternalSecret](./charts/adsb-api/templates/adsb-api-secret.yaml)) and stored in a postgresql db
 - A local RTL-SDR is used to decode ADS-B from local flights (stored under in-situ filter)
 - Data from DB is displayed on a website (LAN only for now)
-- Last minutes data is continuously evaluated against [notification rules](./charts/adsb-alerts/templates/configmap.yaml), matches are alerted on Discord
+- Last minutes data is continuously evaluated against notification rules (Infisical key `alerts_filters.json`, synced via [ExternalSecret](./charts/adsb-alerts/templates/adsb-alerts-secret.yaml)), matches are alerted on Discord
 
 # Architecture
 
