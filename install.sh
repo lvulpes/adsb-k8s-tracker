@@ -10,11 +10,10 @@ if [[ "$1" != "" ]]; then
     MY_CLUSTER=$1
 elif [[ "$1" == "" ]]; then
     echo "Need at least 1 arg!"
-else
-    echo "something else"
+    exit 1
 fi
 
-if [ "$INFISICAL_CLIENT_SECRET" = "" ] || [ "$INFISICAL_TOKEN" = "" ] || [ "$INFISICAL_CLIENT_ID" = "" ]; then
+if [ "$INFISICAL_CLIENT_SECRET" = "" ] || [ "$INFISICAL_CLIENT_ID" = "" ]; then
     echo "Infisical env variables must be set!"
     exit 1
 else
