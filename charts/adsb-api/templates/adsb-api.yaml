@@ -38,13 +38,13 @@ spec:
               memory: 128Mi
           volumeMounts:
             # This name refers to the storage block to grab and mount in the file system of this container
-            - name: adsb-api-config
+            - name: adsb-api-secret
               mountPath: /app/adsb-api/config.json
               subPath: config.json
               readOnly: true
       volumes:
         # This name defines the identity of the storage volume at the pod level
-        - name: adsb-api-config
+        - name: adsb-api-secret
           secret:
             secretName: adsb-api-secret
 ---
