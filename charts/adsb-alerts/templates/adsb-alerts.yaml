@@ -55,18 +55,16 @@ spec:
               cpu: 100m
               memory: 128Mi
           volumeMounts:
-            # This name refers to the storage block to grab and mount in the file system of this container
-            - name: adsb-alerts-config
+            # Mount the alerts filters JSON from the secret
+            - name: adsb-alerts-secret
               mountPath: /app/adsb-alerts/filters.json
-              subPath: filters.json
+              subPath: alerts_filters.json
               readOnly: true
       volumes:
-        # This name defines the identity of the storage volume at the pod level
-        - name: adsb-alerts-config
-          configMap:
-            # This is the name of the configmap in the Helm chart
-            name: adsb-alerts-config
-
+        # This volume now references the secret created by the ExternalSecret
+        - name: adsb-alerts-secret
+          secret:
+            secretName: adsb-alerts-secret
 ---
 apiVersion: v1
 kind: Service
@@ -80,4 +78,3 @@ spec:
       port: 80
       targetPort: 8000
   type: ClusterIP
-
