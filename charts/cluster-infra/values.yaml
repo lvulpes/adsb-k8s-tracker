@@ -9,6 +9,13 @@ primary:
   persistence:
     enabled: true
     size: 10Gi
+  # Explicit resources override the chart's small default resourcesPreset, which got postgres OOMKilled
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   extraEnvVars:
     - name: POSTGRES_DATABASE
       value: "adsb"
