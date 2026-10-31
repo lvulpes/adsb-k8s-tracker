@@ -24,6 +24,10 @@ spec:
               value: "INFO"
             - name: INGESTOR_URL
               value: "http://adsb-ingestor-service/api/v1/enrich"
+            - name: MIL_URL
+              value: "https://opendata.adsb.fi/api/v2/mil"
+            - name: TRACKING_DIR
+              value: "/app/adsb-api/tracking"
           ports:
             - containerPort: 8080
           command: ["python"]
@@ -42,11 +46,20 @@ spec:
               mountPath: /app/adsb-api/config.json
               subPath: config.json
               readOnly: true
+            # Mounted as a dir without subPath so secret updates reach the pod without a restart
+            - name: adsb-api-tracking
+              mountPath: /app/adsb-api/tracking
+              readOnly: true
       volumes:
         # This name defines the identity of the storage volume at the pod level
         - name: adsb-api-secret
           secret:
             secretName: adsb-api-secret
+        - name: adsb-api-tracking
+          secret:
+            secretName: adsb-api-tracking
+            # The pod still starts if no tracking lists exist yet
+            optional: true
 ---
 apiVersion: v1
 kind: Service
