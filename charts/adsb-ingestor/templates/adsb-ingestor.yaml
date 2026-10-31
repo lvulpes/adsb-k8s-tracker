@@ -35,6 +35,9 @@ spec:
               value: "8000"
             - name: POLL_INTERVAL
               value: "15"
+            # Aircraft and positions older than this are deleted (14 days)
+            - name: RETENTION_HOURS
+              value: "336"
             - name: LOG_LEVEL
               value: DEBUG
           # Resource limits 

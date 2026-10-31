@@ -41,6 +41,18 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=external-secret
 helm upgrade --install cluster-infra ./charts/cluster-infra
 helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql \
     --version 18.12.16 -f charts/cluster-infra/values.yaml
+
+# A StatefulSet won't replace a pod that isn't Ready, so a broken postgres pod can block the rollout.
+# Don't fail the deploy, but log enough to find out why if the pod isn't replaced.
+echo "Waiting for postgres rollout..."
+if ! kubectl rollout status statefulset/adsb-db-postgresql --timeout=180s; then
+    echo "WARNING: postgres pod was not replaced with the new revision"
+    kubectl get statefulset adsb-db-postgresql \
+        -o jsonpath='{"currentRevision: "}{.status.currentRevision}{"\nupdateRevision:  "}{.status.updateRevision}{"\n"}' || true
+    kubectl get pod adsb-db-postgresql-0 -o wide || true
+    kubectl describe pod adsb-db-postgresql-0 | tail -n 30 || true
+fi
+
 helm upgrade --install adsb-gateway ./charts/adsb-gateway
 
 echo "Deploying components..."
