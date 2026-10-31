@@ -5,11 +5,17 @@ import time
 
 from geopy.distance import great_circle
 import requests
+import yaml
 
 PATH = "/app"
 CONFIG_PATH = PATH + '/adsb-api/config.json'
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 INGESTOR_URL = os.getenv("INGESTOR_URL", "")
+# Registration based tracking: one yaml list per file, the file name is the filter name
+MIL_URL = os.getenv("MIL_URL", "")
+TRACKING_DIR = os.getenv("TRACKING_DIR", PATH + '/adsb-api/tracking')
+# Length of the filter column in the aircraft table
+MAX_FILTER_NAME_LENGTH = 30
 
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),
@@ -51,6 +57,84 @@ def poi_filter(filter_conf: dict, aircraft: list) -> list:
 def icao_filter(filter_conf: dict, aircraft: list) -> list:
     """ Return list of aicraft on the list. """
     return [ac for ac in aircraft if ac['hex'].lower() in filter_conf['icao_list']]
+
+def normalize_reg(reg: str) -> str:
+    """ Make registrations comparable, e.g. '88-26032' and '88 26032 ' both become '8826032'. """
+    return str(reg).upper().replace('-', '').replace(' ', '')
+
+def load_tracking_list(file_path: str) -> tuple[set, set]:
+    """ Read a yaml tracking list, return the hex codes and registrations to track. """
+    with open(file_path, 'r', encoding='utf-8') as f:
+        # BaseLoader keeps every value a string, so '0601' isn't read as octal 385
+        entries = yaml.load(f, Loader=yaml.BaseLoader)
+
+    if not isinstance(entries, list):
+        raise ValueError("tracking list must be a yaml list of aircraft")
+
+    hexes, regs = set(), set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            logging.warning(f"Skipping malformed entry in {file_path}: {entry}")
+        elif entry.get('hex'):
+            # hex takes precedence over the registration
+            hexes.add(entry['hex'].strip().lower())
+        elif entry.get('reg'):
+            regs.add(normalize_reg(entry['reg']))
+        else:
+            logging.warning(f"Skipping entry without hex or reg in {file_path}: {entry}")
+    return hexes, regs
+
+def load_tracking_lists(tracking_dir: str) -> dict:
+    """ Read every tracking list in the dir, keyed by file name, sorted so the first match is stable. """
+    if not os.path.isdir(tracking_dir):
+        return {}
+
+    tracking_lists = {}
+    # Skip the '..data' style entries k8s creates in mounted secret dirs
+    for name in sorted(n for n in os.listdir(tracking_dir) if not n.startswith('.')):
+        if len(name) > MAX_FILTER_NAME_LENGTH:
+            logging.error(f"Skipping tracking list {name}, name is longer than {MAX_FILTER_NAME_LENGTH} characters")
+            continue
+        try:
+            tracking_lists[name] = load_tracking_list(os.path.join(tracking_dir, name))
+        except (OSError, yaml.YAMLError, ValueError) as e:
+            # One broken list shouldn't stop the others from being tracked
+            logging.error(f"Failed to read tracking list {name}: {e}")
+    return tracking_lists
+
+def tracking_filter(tracking_lists: dict, aircraft: list) -> list:
+    """ Return aircraft on any tracking list, tagged with the first list they match. """
+    tracked = []
+    for ac in aircraft:
+        ac_hex = ac.get('hex', '').lower()
+        ac_reg = normalize_reg(ac['r']) if ac.get('r') else None
+        matches = [name for name, (hexes, regs) in tracking_lists.items()
+                   if ac_hex in hexes or (ac_reg and ac_reg in regs)]
+        if not matches:
+            continue
+        if len(matches) > 1:
+            logging.warning(f"Aircraft {ac_hex} is on several tracking lists {matches}, using {matches[0]}")
+        ac['filter'] = matches[0]
+        tracked.append(ac)
+    return tracked
+
+def track_registrations() -> None:
+    """ Get all military aircraft once and ship the ones on our tracking lists. """
+    tracking_lists = load_tracking_lists(TRACKING_DIR)
+    if not tracking_lists:
+        logging.debug(f"No tracking lists found in {TRACKING_DIR}, skipping")
+        return
+
+    logging.info("Getting military aircraft for tracking lists...")
+    aircraft = get_adsb_feed(MIL_URL)
+    if aircraft is None:
+        logging.warning("No aircraft data returned from military endpoint")
+        return
+
+    tracked = tracking_filter(tracking_lists, aircraft)
+    logging.info(f"Got {len(tracked)} of {len(aircraft)} military aircraft from {len(tracking_lists)} tracking lists")
+    if tracked:
+        ship_to_ingestor(tracked)
 
 def get_adsb_feed(url: str) -> dict:
     """ Get aircraft data from API given by , return json. """
@@ -159,6 +243,10 @@ def main() -> None:
                 ship_to_ingestor(filtered_ac)
             else:
                 logging.warning(f"filter returned {len(filtered_ac)} aircraft for {query_filter}")
+
+        if MIL_URL:
+            track_registrations()
+            time.sleep(1)
         # end of workflow, sleep for 60s
         time.sleep(59)
 
