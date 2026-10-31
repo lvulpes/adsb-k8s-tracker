@@ -7,6 +7,7 @@ import re
 
 import aiohttp
 import asyncpg
+import yaml
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:password@adsb-db:5432/adsb")
 SLEEP_INTERVAL = os.getenv("SLEEP_INTERVAL", "60")
@@ -18,6 +19,8 @@ ALERT_PARAMS = os.getenv("ALERT_PARAMS", "hex, flight")
 MAX_DISCORD_RETRIES = os.getenv("MAX_DISCORD_RETRIES", "3")
 TRACKING_URL = os.getenv("TRACKING_URL", "")
 DB_RETRY_MAX_DELAY = os.getenv("DB_RETRY_MAX_DELAY", "30")
+# Tracking lists shared with adsb-api, entries with alerting: enabled are alerted on
+TRACKING_DIR = os.getenv("TRACKING_DIR", '/app/adsb-alerts/tracking')
 
 # Errors raised when the database is down or restarting
 DB_ERRORS = (OSError, asyncio.TimeoutError, asyncpg.PostgresError, asyncpg.InterfaceError)
@@ -33,6 +36,57 @@ def read_filters(file_path: str) -> list[str]:
     """Reads mounted ConfigMap from disk."""
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def normalize_reg(reg: str) -> str:
+    """ Make registrations comparable, same rules as adsb-api. """
+    return str(reg).upper().replace('-', '').replace(' ', '')
+
+def tracking_filter_text(entry: dict) -> str:
+    """ Build the alert text from the comment and unit of a tracking entry. """
+    comment, unit = entry.get('comment'), entry.get('unit')
+    if comment and unit:
+        return f"{comment} from {unit}"
+    return comment or unit or ""
+
+def read_tracking_alerts(tracking_dir: str) -> tuple[dict, dict]:
+    """ Read all tracking lists, return filter texts of alerting entries keyed by hex and by registration. """
+    by_hex, by_reg = {}, {}
+    if not os.path.isdir(tracking_dir):
+        return by_hex, by_reg
+
+    # Skip the '..data' style entries k8s creates in mounted secret dirs
+    for name in sorted(n for n in os.listdir(tracking_dir) if not n.startswith('.')):
+        try:
+            with open(os.path.join(tracking_dir, name), "r", encoding="utf-8") as f:
+                # BaseLoader keeps every value a string, so '0601' isn't read as octal 385
+                entries = yaml.load(f, Loader=yaml.BaseLoader)
+        except (OSError, yaml.YAMLError) as e:
+            logging.error(f"Failed to read tracking list {name}: {e}")
+            continue
+        if not isinstance(entries, list):
+            logging.error(f"Tracking list {name} must be a yaml list of aircraft")
+            continue
+
+        for entry in entries:
+            if not isinstance(entry, dict) or entry.get('alerting', '').lower() != 'enabled':
+                continue
+            # hex takes precedence over the registration, first list wins for duplicates
+            if entry.get('hex'):
+                by_hex.setdefault(entry['hex'].strip().lower(), tracking_filter_text(entry))
+            elif entry.get('reg'):
+                by_reg.setdefault(normalize_reg(entry['reg']), tracking_filter_text(entry))
+    return by_hex, by_reg
+
+def match_tracking(ac: dict, by_hex: dict, by_reg: dict) -> dict:
+    """ Return an alert config with the filter text if the aircraft is on a tracking list. """
+    hex_code = (ac.get('hex') or '').lower()
+    if hex_code in by_hex:
+        filter_text = by_hex[hex_code]
+    elif ac.get('registration') and normalize_reg(ac['registration']) in by_reg:
+        filter_text = by_reg[normalize_reg(ac['registration'])]
+    else:
+        return {}
+    return {'metadata': {'filter_text': filter_text}}
 
 async def connect_db():
     """ Create the DB pool, retrying with backoff until the database is reachable. """
@@ -130,6 +184,21 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
             logging.error(f"Networking error sending webhook: {e}")
             return False
 
+async def alert_once(session, ac, f_conf: dict, active_alerts: dict):
+    """ Dispatch an alert unless one is already active for the aircraft, then keep it active. """
+    hex_code = ac.get('hex')
+    # If alert is already active, update timestamp
+    if hex_code in active_alerts:
+        active_alerts[hex_code] = datetime.now(timezone.utc)
+        return
+    # New alert, dispatch notification
+    success = await dispatch_alert(session, ac, DISCORD_WEBHOOK, f_conf)
+    if success:
+        logging.debug(f"Successfully sent alert to discord for hex {hex_code}")
+        active_alerts[hex_code] = datetime.now(timezone.utc)
+    else:
+        logging.warning(f"Failed to send alert for hex {hex_code}")
+
 async def main():
     """ Send alerts to discord for new flights based on configs. """
     db_pool = await connect_db()
@@ -142,6 +211,7 @@ async def main():
             while True:
                 # Non-blocking ConfigMap read (via thread)
                 ac_filters = await asyncio.to_thread(read_filters, CONFIG_PATH)
+                tracking_by_hex, tracking_by_reg = await asyncio.to_thread(read_tracking_alerts, TRACKING_DIR)
 
                 # Non-blocking DB query, fetches last updated since SLEEP_INTERVAL
                 # The pool reconnects on its own once the database is back, so skip this tick
@@ -164,18 +234,13 @@ async def main():
                         if f_conf.get("metadata", {}).get("status", "enabled").lower() != 'enabled':
                             continue
                         logging.info(f"Found match for aircraft {hex_code} in filter {f_name}")
+                        await alert_once(session, ac, f_conf, active_alerts)
 
-                        # If alert is already active, update timestamp
-                        if hex_code in active_alerts:
-                            active_alerts[hex_code] = datetime.now(timezone.utc)
-                            continue
-                        # New alert, dispatch notification
-                        success = await dispatch_alert(session, ac, DISCORD_WEBHOOK, f_conf)
-                        if success:
-                            logging.debug(f"Successfully sent alert to discord for hex {hex_code}")
-                            active_alerts[ac['hex']] = datetime.now(timezone.utc)
-                        else:
-                            logging.warning(f"Failed to send alert for hex {ac.get('hex')}")
+                    # Check the tracking lists, active_alerts prevents a second alert for the same aircraft
+                    tracking_conf = match_tracking(ac, tracking_by_hex, tracking_by_reg)
+                    if tracking_conf:
+                        logging.info(f"Found match for aircraft {hex_code} in tracking lists")
+                        await alert_once(session, ac, tracking_conf, active_alerts)
 
                 # Cleanup active alerts older than 1 hour (3600 seconds)
                 now = datetime.now(timezone.utc)

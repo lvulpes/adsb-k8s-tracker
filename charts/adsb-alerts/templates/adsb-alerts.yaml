@@ -46,6 +46,8 @@ spec:
               value: "3"
             - name: TRACKING_URL
               value: "https://globe.adsbexchange.com/?icao="
+            - name: TRACKING_DIR
+              value: /app/adsb-alerts/tracking
           # Resource limits 
           resources:
             limits:
@@ -60,11 +62,20 @@ spec:
               mountPath: /app/adsb-alerts/filters.json
               subPath: alerts_filters.json
               readOnly: true
+            # Mounted as a dir without subPath so secret updates reach the pod without a restart
+            - name: adsb-alerts-tracking
+              mountPath: /app/adsb-alerts/tracking
+              readOnly: true
       volumes:
         # This volume now references the secret created by the ExternalSecret
         - name: adsb-alerts-secret
           secret:
             secretName: adsb-alerts-secret
+        - name: adsb-alerts-tracking
+          secret:
+            secretName: adsb-alerts-tracking
+            # The pod still starts if no tracking lists exist yet
+            optional: true
 ---
 apiVersion: v1
 kind: Service
