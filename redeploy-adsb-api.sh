@@ -10,6 +10,11 @@ elif [[ "$1" == "" ]]; then
     CLUSTER_NAME="hugin-cluster"
 fi
 
+if [ "$INFISICAL_CLIENT_SECRET" = "" ] || [ "$INFISICAL_CLIENT_ID" = "" ]; then
+    echo "Infisical env variables must be set!"
+    exit 1
+fi
+
 uv sync
 
 echo "Building images..."
@@ -34,7 +39,8 @@ echo "Waiting for External Secrets webhook to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=external-secrets-webhook -n external-secrets --timeout=60s
 
 helm upgrade --install cluster-infra ./charts/cluster-infra
-helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql -f charts/cluster-infra/values.yaml
+helm upgrade --install adsb-db oci://registry-1.docker.io/bitnamicharts/postgresql \
+    --version 18.12.16 -f charts/cluster-infra/values.yaml
 helm upgrade --install adsb-gateway ./charts/adsb-gateway
 
 echo "Deploying components..."
@@ -43,6 +49,9 @@ helm upgrade --install adsb-ingestor ./charts/adsb-ingestor
 helm upgrade --install adsb-ui ./charts/adsb-ui
 helm upgrade --install adsb-decoder ./charts/adsb-decoder
 helm upgrade --install adsb-alerts ./charts/adsb-alerts
+
+echo "Waiting for external secrets to sync..."
+kubectl wait --for=condition=Ready externalsecret --all --timeout=120s
 
 echo "Restarting deployment..."
 kubectl rollout restart deployment adsb-api-deployment
