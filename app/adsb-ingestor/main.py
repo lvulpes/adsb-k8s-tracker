@@ -14,7 +14,12 @@ DECODER_URL = os.getenv("DECODER_URL", "http://adsb-decoder/data/aircraft.json")
 API_URL = os.getenv("API_URL", "http://adsb-api/api/aircraft")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "5"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-LISTEN_PORT = os.getenv("LISTEN_PORT", "8000")
+LISTEN_PORT = int(os.getenv("LISTEN_PORT", "8000"))
+# Only live traffic is kept, older aircraft and positions are pruned
+RETENTION_HOURS = int(os.getenv("RETENTION_HOURS", "24"))
+RETENTION_CHECK_INTERVAL = int(os.getenv("RETENTION_CHECK_INTERVAL", "600"))
+RETENTION_BATCH_SIZE = int(os.getenv("RETENTION_BATCH_SIZE", "10000"))
+DB_RETRY_MAX_DELAY = int(os.getenv("DB_RETRY_MAX_DELAY", "30"))
 
 # Configure logging
 logging.basicConfig(
@@ -61,8 +66,56 @@ async def init_db(pool):
             );
             
             CREATE INDEX IF NOT EXISTS idx_position_hex_time ON position(hex, timestamp DESC);
+            CREATE INDEX IF NOT EXISTS idx_position_time ON position(timestamp);
         ''')
         logging.info("Database schema ready.")
+
+async def connect_db():
+    """Creates the pool and schema, retrying with backoff until the database is reachable."""
+    delay = 1
+    while True:
+        pool = None
+        try:
+            pool = await asyncpg.create_pool(dsn=DB_DSN)
+            await init_db(pool)
+            return pool
+        except (OSError, asyncio.TimeoutError, asyncpg.PostgresError, asyncpg.InterfaceError) as e:
+            logging.warning(f"Database not ready ({e}), retrying in {delay}s")
+            if pool is not None:
+                await pool.close()
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, DB_RETRY_MAX_DELAY)
+
+async def prune_old_data(pool):
+    """Periodically deletes positions and aircraft older than RETENTION_HOURS."""
+    while True:
+        try:
+            async with pool.acquire() as conn:
+                deleted_positions = 0
+                # Delete in batches so the first run on a large table doesn't hold one huge transaction
+                while True:
+                    result = await conn.execute('''
+                        DELETE FROM position WHERE id IN (
+                            SELECT id FROM position
+                            WHERE timestamp < NOW() - make_interval(hours => $1)
+                            LIMIT $2
+                        )
+                    ''', RETENTION_HOURS, RETENTION_BATCH_SIZE)
+                    batch = int(result.split()[-1])
+                    deleted_positions += batch
+                    if batch < RETENTION_BATCH_SIZE:
+                        break
+
+                # Positions are only written together with an aircraft update, so nothing recent cascades here
+                result = await conn.execute('''
+                    DELETE FROM aircraft WHERE last_updated < NOW() - make_interval(hours => $1)
+                ''', RETENTION_HOURS)
+                deleted_aircraft = int(result.split()[-1])
+            logging.info(f"Retention: pruned {deleted_positions} positions and {deleted_aircraft} aircraft older than {RETENTION_HOURS}h")
+        except Exception as e:
+            logging.error(f"Error pruning old data: {e}")
+
+        await asyncio.sleep(RETENTION_CHECK_INTERVAL)
 
 async def upsert_aircraft_data(pool, aircraft_list, source):
     """Inserts or updates aircraft and appends new positions."""
@@ -142,20 +195,23 @@ async def lifespan(app: FastAPI):
     global db_pool, http_session
     logging.info("Starting adsb-ingestor...")
     
-    # 1. Setup DB
-    db_pool = await asyncpg.create_pool(dsn=DB_DSN)
-    await init_db(db_pool)
+    # 1. Setup DB, waits until the database is reachable instead of crashing
+    db_pool = await connect_db()
     
     # 2. Setup HTTP session for polling
     http_session = aiohttp.ClientSession()
     
     # 3. Start background polling task for the local decoder
     decoder_task = asyncio.create_task(fetch_decoder_data(http_session, DECODER_URL, db_pool))
-    
+
+    # 4. Start background retention task
+    retention_task = asyncio.create_task(prune_old_data(db_pool))
+
     yield # App is running and receiving POST requests
-    
-    # 4. Teardown
+
+    # 5. Teardown
     decoder_task.cancel()
+    retention_task.cancel()
     await http_session.close()
     await db_pool.close()
 

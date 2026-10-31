@@ -17,6 +17,10 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 ALERT_PARAMS = os.getenv("ALERT_PARAMS", "hex, flight")
 MAX_DISCORD_RETRIES = os.getenv("MAX_DISCORD_RETRIES", "3")
 TRACKING_URL = os.getenv("TRACKING_URL", "")
+DB_RETRY_MAX_DELAY = os.getenv("DB_RETRY_MAX_DELAY", "30")
+
+# Errors raised when the database is down or restarting
+DB_ERRORS = (OSError, asyncio.TimeoutError, asyncpg.PostgresError, asyncpg.InterfaceError)
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +33,17 @@ def read_filters(file_path: str) -> list[str]:
     """Reads mounted ConfigMap from disk."""
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+async def connect_db():
+    """ Create the DB pool, retrying with backoff until the database is reachable. """
+    delay = 1
+    while True:
+        try:
+            return await asyncpg.create_pool(dsn=DB_DSN)
+        except DB_ERRORS as e:
+            logging.warning(f"Database not ready ({e}), retrying in {delay}s")
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, int(DB_RETRY_MAX_DELAY))
 
 async def fetch_last_aircraft(pool, max_age_seconds: str) -> list:
     """ Fetch the latest added aircraft from the DB. """
@@ -117,7 +132,7 @@ async def dispatch_alert(session, ac: dict, webhook: str, f_conf: dict):
 
 async def main():
     """ Send alerts to discord for new flights based on configs. """
-    db_pool = await asyncpg.create_pool(dsn=DB_DSN)
+    db_pool = await connect_db()
     active_alerts = {}
 
     # 1. Create the session ONCE outside the loop
@@ -129,7 +144,13 @@ async def main():
                 ac_filters = await asyncio.to_thread(read_filters, CONFIG_PATH)
 
                 # Non-blocking DB query, fetches last updated since SLEEP_INTERVAL
-                new_aircraft = await fetch_last_aircraft(db_pool, DB_INTERVAL)
+                # The pool reconnects on its own once the database is back, so skip this tick
+                try:
+                    new_aircraft = await fetch_last_aircraft(db_pool, DB_INTERVAL)
+                except DB_ERRORS as e:
+                    logging.error(f"Database query failed, retrying next interval: {e}")
+                    await asyncio.sleep(int(SLEEP_INTERVAL) - 1)
+                    continue
                 logging.debug(f"Received {len(new_aircraft)} from database")
 
                 # Process results
