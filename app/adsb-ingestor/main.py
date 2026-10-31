@@ -16,7 +16,7 @@ POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "5"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 LISTEN_PORT = int(os.getenv("LISTEN_PORT", "8000"))
 # Only live traffic is kept, older aircraft and positions are pruned
-RETENTION_HOURS = int(os.getenv("RETENTION_HOURS", "24"))
+RETENTION_HOURS = int(os.getenv("RETENTION_HOURS", "336"))
 RETENTION_CHECK_INTERVAL = int(os.getenv("RETENTION_CHECK_INTERVAL", "600"))
 RETENTION_BATCH_SIZE = int(os.getenv("RETENTION_BATCH_SIZE", "10000"))
 DB_RETRY_MAX_DELAY = int(os.getenv("DB_RETRY_MAX_DELAY", "30"))
