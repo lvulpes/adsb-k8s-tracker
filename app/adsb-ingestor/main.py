@@ -130,6 +130,8 @@ async def upsert_aircraft_data(pool, aircraft_list, source):
                     continue
 
                 flight = ac.get("flight", "").strip() or None
+                # adsb-alerts matches tracking lists on the registration
+                registration = (ac.get("r") or "").strip() or None
                 category = ac.get("category")
 
                 # Handle readsb's "ground" string for numeric altitude columns
@@ -140,15 +142,16 @@ async def upsert_aircraft_data(pool, aircraft_list, source):
                 alt_geom = None if (raw_alt_geom == "ground" or raw_alt_geom is None) else int(raw_alt_geom)
 
                 await conn.execute('''
-                    INSERT INTO aircraft (hex, flight, category, filter, last_updated)
-                    VALUES ($1, $2, $3, $4, NOW())
+                    INSERT INTO aircraft (hex, flight, registration, category, filter, last_updated)
+                    VALUES ($1, $2, $3, $4, $5, NOW())
                     ON CONFLICT (hex) DO UPDATE SET
                         flight = COALESCE(EXCLUDED.flight, aircraft.flight),
+                        registration = COALESCE(EXCLUDED.registration, aircraft.registration),
                         category = COALESCE(EXCLUDED.category, aircraft.category),
                         filter = COALESCE(EXCLUDED.filter, aircraft.filter),
                         last_updated = NOW();
-                ''', 
-                hex_code, flight if ac.get("flight") else None, ac.get("category"), ac.get("filter"))
+                ''',
+                hex_code, flight if ac.get("flight") else None, registration, ac.get("category"), ac.get("filter"))
 
                 # Check if we have coordinates OR at least altitude/speed telemetry
                 has_coords = ac.get("lat") is not None and ac.get("lon") is not None
